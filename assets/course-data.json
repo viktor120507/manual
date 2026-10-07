@@ -193,6 +193,95 @@
           "goal": "Установить и настроить браузер на рабочей станции."
         }
       ]
+    },
+    {
+      "id": "demo-2026-m3",
+      "year": 2026,
+      "number": 3,
+      "title": "Эксплуатация объектов сетевой инфраструктуры",
+      "path": "demo-2026/modul-3/",
+      "lessons": [
+        {
+          "id": "demo-2026-m3-t01",
+          "number": 1,
+          "path": "demo-2026/modul-3/zadanie-01-import-polzovateley/",
+          "title": "Импорт пользователей в домен",
+          "name": "Импорт пользователей",
+          "goal": "Импортировать пользователей из CSV в домен и проверить вход на HQ-CLI."
+        },
+        {
+          "id": "demo-2026-m3-t02",
+          "number": 2,
+          "path": "demo-2026/modul-3/zadanie-02-centr-sertifikacii/",
+          "title": "Центр сертификации и HTTPS",
+          "name": "Сертификаты и HTTPS",
+          "goal": "Настроить центр сертификации с алгоритмами ГОСТ, выдать сертификаты и включить HTTPS."
+        },
+        {
+          "id": "demo-2026-m3-t03",
+          "number": 3,
+          "path": "demo-2026/modul-3/zadanie-03-ipsec/",
+          "title": "Защищённый туннель IPsec",
+          "name": "Туннель IPsec",
+          "goal": "Защитить туннель между HQ-RTR и BR-RTR и проверить динамическую маршрутизацию."
+        },
+        {
+          "id": "demo-2026-m3-t04",
+          "number": 4,
+          "path": "demo-2026/modul-3/zadanie-04-nftables/",
+          "title": "Межсетевой экран nftables",
+          "name": "Межсетевой экран",
+          "goal": "Разрешить необходимые протоколы и ограничить входящие подключения на маршрутизаторах."
+        },
+        {
+          "id": "demo-2026-m3-t05",
+          "number": 5,
+          "path": "demo-2026/modul-3/zadanie-05-cups/",
+          "title": "Принт-сервер CUPS",
+          "name": "Принт-сервер CUPS",
+          "goal": "Опубликовать виртуальный PDF-принтер на HQ-SRV и подключить его на HQ-CLI."
+        },
+        {
+          "id": "demo-2026-m3-t06",
+          "number": 6,
+          "path": "demo-2026/modul-3/zadanie-06-rsyslog/",
+          "title": "Сбор и ротация логов",
+          "name": "Логи и rsyslog",
+          "goal": "Собирать журналы устройств на HQ-SRV и настроить их ротацию."
+        },
+        {
+          "id": "demo-2026-m3-t07",
+          "number": 7,
+          "path": "demo-2026/modul-3/zadanie-07-prometheus-grafana/",
+          "title": "Мониторинг Prometheus и Grafana",
+          "name": "Мониторинг",
+          "goal": "Настроить сбор метрик HQ-SRV и BR-SRV и визуализировать их в Grafana."
+        },
+        {
+          "id": "demo-2026-m3-t08",
+          "number": 8,
+          "path": "demo-2026/modul-3/zadanie-08-inventarizaciya-ansible/",
+          "title": "Инвентаризация через Ansible",
+          "name": "Инвентаризация Ansible",
+          "goal": "Собирать имена и IP-адреса HQ-SRV и HQ-CLI в отчёты YAML."
+        },
+        {
+          "id": "demo-2026-m3-t09",
+          "number": 9,
+          "path": "demo-2026/modul-3/zadanie-09-fail2ban/",
+          "title": "Защита SSH с Fail2Ban",
+          "name": "Защита SSH",
+          "goal": "Настроить блокировку адресов после неудачных попыток входа по SSH."
+        },
+        {
+          "id": "demo-2026-m3-t10",
+          "number": 10,
+          "path": "demo-2026/modul-3/zadanie-10-kiber-bekap/",
+          "title": "Резервное копирование Кибер Бэкап",
+          "name": "Резервное копирование",
+          "goal": "Подготовить сервер и узел хранения для резервных копий каталога /etc и базы webdb."
+        }
+      ]
     }
   ]
 }
