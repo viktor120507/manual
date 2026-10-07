@@ -131,32 +131,77 @@ if(searchDialog){
 
 document.querySelectorAll('.sidebar nav a').forEach((link,index)=>link.style.setProperty('--nav-delay',Math.min(index,7)*25+'ms'));
 
-// Reveal each block once; hash targets and restored reading positions stay visible.
-const revealCandidates=[...document.querySelectorAll('.breadcrumb,.page-title,.reader-tools,.task-state,.resume-banner,.module-overview,.pagination,.contact-footer,.contents h1,.contents h2,.contents h3,.contents .code-toolbar,.contents blockquote,.contents table,.contents .diagram,.contents img')].map(element=>element.matches('img')?(element.closest('p')||element):element);
-const revealTargets=[...new Set(revealCandidates)].filter(element=>!revealCandidates.some(parent=>parent!==element&&parent.contains(element)));
+// Keep text without paragraph/list markup in the reveal flow as well.
+// Inline spans preserve the original whitespace, links and line layout.
+const contentRoot=document.querySelector('.contents');
+const atomicContent='.code-toolbar,pre,table,.diagram,svg';
+if(contentRoot){
+ for(const parent of [contentRoot,...contentRoot.querySelectorAll('div,section,ul,ol,blockquote,figure')]){
+  if(parent.closest(atomicContent))continue;
+  let run=[];
+  function wrapRun(){
+   if(run.some(node=>node.textContent.trim())){
+    const span=document.createElement('span');span.className='motion-inline';parent.insertBefore(span,run[0]);span.append(...run);
+   }
+   run=[];
+  }
+  for(const node of [...parent.childNodes]){
+   const inline=node.nodeType===Node.TEXT_NODE||(node.nodeType===Node.ELEMENT_NODE&&node.matches('a,strong,em,b,i,u,s,code,span,br,small,sub,sup'));
+   if(inline)run.push(node);else wrapRun();
+  }
+  wrapRun();
+ }
+}
+// Every text block gets its own reveal. Containers fade without moving their
+// children twice, and code/table/diagram internals stay one readable unit.
+const revealSelector='.breadcrumb,.page-title,.reader-tools,.task-state,.resume-banner,.module-overview,.pagination,.contact-footer,.source-row,.mobile-toc,.toc,article,.contents h1,.contents h2,.contents h3,.contents h4,.contents h5,.contents h6,.contents p,.contents li,.contents dt,.contents dd,.contents .code-toolbar,.contents pre,.contents blockquote,.contents table,.contents .diagram,.contents img,.contents hr,.contents figure,.contents figcaption,.contents details,.contents .motion-inline';
+const revealTargets=[...document.querySelectorAll(revealSelector)].filter(element=>{
+ if(element.parentElement?.closest(atomicContent))return false;
+ // An image-only paragraph is a layout wrapper; reveal the image itself.
+ return !element.matches('p')||element.textContent.trim()||!element.querySelector('img');
+});
+const revealTargetSet=new Set(revealTargets);
+for(const element of revealTargets){
+ if(revealTargets.some(child=>child!==element&&element.contains(child)))element.classList.add('motion-container');
+}
 let revealObserver;
 function reveal(element,delay=0){element.style.setProperty('--reveal-delay',delay+'ms');element.classList.remove('motion-pending');element.classList.add('motion-revealed');}
+function showReadingTarget(target){
+ for(let element=target;element;element=element.parentElement){
+  if(!revealTargetSet.has(element))continue;
+  revealObserver?.unobserve(element);element.classList.remove('motion-pending');element.classList.add('motion-revealed','motion-instant');
+ }
+}
+function hashTarget(){try{return document.getElementById(decodeURIComponent(location.hash.slice(1)));}catch{return null;}}
 function prepareMotion(){
  revealObserver?.disconnect();
  document.documentElement.classList.toggle('motion-enabled',!motionPreference.matches);
- if(motionPreference.matches){revealTargets.forEach(element=>{element.classList.remove('motion-pending','motion-revealed');element.style.removeProperty('--reveal-delay');});return;}
+ if(motionPreference.matches){revealTargets.forEach(element=>{element.classList.remove('motion-pending','motion-revealed','motion-instant');element.style.removeProperty('--reveal-delay');});return;}
  if(!('IntersectionObserver' in window))return;
- revealObserver=new IntersectionObserver(entries=>{let index=0;for(const entry of entries){if(!entry.isIntersecting)continue;reveal(entry.target,Math.min(index++,4)*55);revealObserver.unobserve(entry.target);}},{threshold:0,rootMargin:'0px 0px -20px 0px'});
+ revealObserver=new IntersectionObserver(entries=>{
+  const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);
+  let index=0;
+  for(const entry of visible){
+   const delay=entry.target.classList.contains('motion-container')?0:Math.min(index++,4)*45;
+   reveal(entry.target,delay);revealObserver.unobserve(entry.target);
+  }
+ },{threshold:0,rootMargin:'0px 0px -20px 0px'});
+ if(location.hash)showReadingTarget(hashTarget());
  let initialIndex=0;
  for(const element of revealTargets){
   if(element.classList.contains('motion-revealed'))continue;
   const rect=element.getBoundingClientRect();
-  if(rect.bottom<0){reveal(element);continue;}
-  if(location.hash&&element.closest('.contents')){reveal(element);continue;}
-  if(rect.top<innerHeight&&rect.bottom>0)reveal(element,Math.min(initialIndex++,5)*65);
+  if(rect.bottom<0){showReadingTarget(element);continue;}
+  if(rect.top<innerHeight&&rect.bottom>0)reveal(element,element.classList.contains('motion-container')?0:Math.min(initialIndex++,5)*55);
   else{element.classList.add('motion-pending');revealObserver.observe(element);}
  }
 }
 for(const dialog of document.querySelectorAll('.search-dialog,.image-dialog')){
  dialog.addEventListener('cancel',event=>{event.preventDefault();closeDialog(dialog);});
 }
-// Never leave a keyboard focus or a direct section link inside an invisible block.
-document.addEventListener('focusin',event=>{event.target.closest('.motion-pending')?.classList.remove('motion-pending');});
-addEventListener('hashchange',()=>{const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(target){target.closest('.motion-pending')?.classList.remove('motion-pending');target.querySelectorAll('.motion-pending').forEach(element=>element.classList.remove('motion-pending'));}});
+// Keyboard focus and anchor navigation expose only their target and ancestors;
+// later paragraphs keep their own scroll reveal instead of being pre-revealed.
+document.addEventListener('focusin',event=>showReadingTarget(event.target));
+addEventListener('hashchange',()=>showReadingTarget(hashTarget()));
 motionPreference.addEventListener('change',prepareMotion);
 prepareMotion();

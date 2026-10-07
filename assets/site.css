@@ -85,3 +85,10 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
 @keyframes pgk-anchor{0%,100%{background:transparent}35%{background:var(--soft)}}
 @media(prefers-reduced-motion:reduce){.motion-pending{opacity:1!important;translate:none!important}.toast{translate:none}}
 @media print{.motion-pending,.motion-revealed{opacity:1!important;translate:none!important;animation:none!important}.toast{display:none!important}}
+
+/* Granular article reveals: text, list rows and frames keep independent timing. */
+@media(prefers-reduced-motion:no-preference){
+ .motion-enabled :is(.motion-container,.motion-inline).motion-pending{translate:none}
+ .motion-enabled :is(.motion-container,.motion-inline).motion-revealed{animation-name:pgk-fade;animation-duration:440ms;animation-delay:var(--reveal-delay,0ms)}
+ .motion-enabled .motion-instant{animation:none!important;opacity:1;translate:none}
+}
