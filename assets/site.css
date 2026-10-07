@@ -92,3 +92,40 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
  .motion-enabled :is(.motion-container,.motion-inline).motion-revealed{animation-name:pgk-fade;animation-duration:440ms;animation-delay:var(--reveal-delay,0ms)}
  .motion-enabled .motion-instant{animation:none!important;opacity:1;translate:none}
 }
+
+/* Focus reading keeps the article centred and its controls within reach. */
+:root{--reader-scale:1;--focus-tools-height:58px}
+.focus-toggle svg{width:18px;height:18px;flex-shrink:0}
+.topbar .focus-toggle{min-height:38px;white-space:nowrap}
+.focus-toggle[aria-pressed=true]{background:var(--soft);border-color:var(--accent);color:var(--accent)}
+.focus-toolbar{position:fixed;inset:var(--header) 0 auto;z-index:29;height:var(--focus-tools-height);background:var(--surface);border-bottom:1px solid var(--line)}
+.focus-toolbar[hidden]{display:none}
+.focus-toolbar-inner{height:100%;max-width:850px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 8px}
+.focus-caption{font-size:13px;color:var(--muted)}
+.reader-size-controls{display:flex;align-items:center;gap:6px}
+.reader-size-controls .tool-button{height:36px;min-width:38px;padding:6px 10px;font-size:15px;line-height:1}
+.reader-size-controls .reader-reset{min-width:64px;font-size:12px;font-variant-numeric:tabular-nums}
+.reader-size-controls button:disabled{opacity:.38;cursor:default;transform:none;box-shadow:none}
+html.focus-mode{scroll-padding-top:calc(var(--header) + var(--focus-tools-height) + 24px)}
+.focus-mode :is(.sidebar,.toc,.mobile-toc,.menu-button,.menu-backdrop,.site-footer){display:none!important}
+.focus-mode .workspace{margin-left:0;grid-template-columns:minmax(0,850px);gap:0;padding:calc(var(--header) + var(--focus-tools-height) + 32px) 32px 36px}
+.focus-mode .contents{font-size:calc(16px * var(--reader-scale))}
+.focus-mode .contents h1{font-size:calc(24px * var(--reader-scale))}
+.focus-mode .contents h2{font-size:calc(21px * var(--reader-scale))}
+.focus-mode .contents h3{font-size:calc(18px * var(--reader-scale))}
+.focus-mode .contents blockquote{font-size:calc(15px * var(--reader-scale))}
+.focus-mode .contents :is(code,pre,table){font-size:calc(14px * var(--reader-scale))}
+.focus-mode .contents pre code{font-size:inherit}
+@media(max-width:899px){.topbar .focus-toggle{width:38px;height:38px;padding:9px}.focus-label{display:none}}
+@media(max-width:919px){.focus-toolbar-inner{padding:0 32px}}
+@media(max-width:599px){
+ .focus-mode .workspace{padding:calc(var(--header) + var(--focus-tools-height) + 23px) 16px 26px}
+ .focus-toolbar-inner{padding:0 16px}
+ .focus-mode .contents{padding:24px 20px}
+ .focus-mode .contents h1{font-size:calc(23px * var(--reader-scale))}
+ .focus-mode .contents h2{font-size:calc(20px * var(--reader-scale))}
+ .focus-mode .contents blockquote{font-size:calc(14px * var(--reader-scale))}
+ .focus-mode .contents pre{font-size:calc(13px * var(--reader-scale))}
+}
+@media(prefers-reduced-motion:no-preference){.motion-enabled.focus-mode .focus-toolbar{animation:pgk-fade 240ms ease both}}
+@media print{.focus-toolbar{display:none!important}.focus-mode .workspace{margin:0;padding:0;display:block}}

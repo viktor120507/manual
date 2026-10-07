@@ -129,6 +129,67 @@ if(searchDialog){
  searchDialog.addEventListener('click',e=>{if(e.target===searchDialog){const r=searchDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog(searchDialog);}});
 }
 
+// Focus reading preferences are separate from course progress and theme.
+const readerKey='pgk-reader-v1';
+const readerSizes=[90,100,110,120,130,140];
+function readReaderPreferences(){
+ try{const saved=JSON.parse(localStorage.getItem(readerKey)||'{}');return {focus:saved?.focus===true,size:readerSizes.includes(saved?.size)?saved.size:100};}
+ catch{return {focus:false,size:100};}
+}
+let readerPreferences=readReaderPreferences();
+const readingArticle=document.querySelector('.contents');
+const headerActions=document.querySelector('.header-actions');
+if(readingArticle&&headerActions){
+ const focusButton=document.createElement('button');focusButton.type='button';focusButton.className='tool-button focus-toggle';focusButton.setAttribute('aria-controls','focus-tools');
+ focusButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/><circle cx="12" cy="12" r="2.5"/></svg><span class="focus-label">Фокус</span>';
+ headerActions.insertBefore(focusButton,themeButton);
+ const focusToolbar=document.createElement('section');focusToolbar.id='focus-tools';focusToolbar.className='focus-toolbar';focusToolbar.setAttribute('aria-label','Настройки чтения');focusToolbar.hidden=true;
+ focusToolbar.innerHTML='<div class="focus-toolbar-inner"><span class="focus-caption">Размер текста</span><div class="reader-size-controls" role="group" aria-label="Размер текста"><button class="tool-button reader-smaller" type="button" aria-label="Уменьшить размер текста" title="Уменьшить размер текста"><span aria-hidden="true">A−</span></button><button class="tool-button reader-reset" type="button" aria-label="Сбросить размер текста" title="Вернуть размер 100%"><output class="reader-size-value" aria-live="polite">100%</output></button><button class="tool-button reader-larger" type="button" aria-label="Увеличить размер текста" title="Увеличить размер текста"><span aria-hidden="true">A+</span></button></div></div>';
+ document.querySelector('.topbar').insertAdjacentElement('afterend',focusToolbar);
+ const smaller=focusToolbar.querySelector('.reader-smaller'),larger=focusToolbar.querySelector('.reader-larger'),reset=focusToolbar.querySelector('.reader-reset');
+ function readingInset(){return document.querySelector('.topbar').getBoundingClientRect().bottom+(document.documentElement.classList.contains('focus-mode')?focusToolbar.getBoundingClientRect().height:0)+20;}
+ function readingReference(){
+  if(window.scrollY<5)return null;
+  const inset=readingInset();
+  for(const element of readingArticle.querySelectorAll('h1,h2,h3,p,li,.code-toolbar,img,table')){
+   const rect=element.getBoundingClientRect();
+   if(rect.width&&rect.height&&rect.bottom>inset&&rect.top<innerHeight)return {element,offset:rect.top-inset};
+  }
+  return null;
+ }
+ function renderReader(preserve=false){
+  const reference=preserve?readingReference():null;
+  const enabled=readerPreferences.focus;
+  if(enabled)setMenu(false);
+  document.documentElement.classList.toggle('focus-mode',enabled);
+  document.documentElement.style.setProperty('--reader-scale',readerPreferences.size/100);
+  focusToolbar.hidden=!enabled;
+  focusButton.setAttribute('aria-pressed',String(enabled));
+  focusButton.setAttribute('aria-label',enabled?'Выключить режим концентрации':'Включить режим концентрации');
+  focusButton.title=focusButton.getAttribute('aria-label');
+  smaller.disabled=readerPreferences.size===readerSizes[0];larger.disabled=readerPreferences.size===readerSizes.at(-1);
+  focusToolbar.querySelector('.reader-size-value').textContent=readerPreferences.size+'%';
+  if(reference){
+   const delta=reference.element.getBoundingClientRect().top-readingInset()-reference.offset;
+   if(Math.abs(delta)>1)window.scrollBy({top:delta,behavior:'instant'});
+   showReadingTarget(reference.element);
+  }
+  updateReading();
+  if(preserve)animateElement(readingArticle,[{opacity:.85},{opacity:1}],{duration:240});
+ }
+ function saveReader(){try{localStorage.setItem(readerKey,JSON.stringify(readerPreferences));}catch{}}
+ function changeReader(change){readerPreferences={...readerPreferences,...change};renderReader(true);saveReader();}
+ focusButton.addEventListener('click',()=>changeReader({focus:!readerPreferences.focus}));
+ smaller.addEventListener('click',()=>changeReader({size:readerSizes[Math.max(0,readerSizes.indexOf(readerPreferences.size)-1)]}));
+ larger.addEventListener('click',()=>changeReader({size:readerSizes[Math.min(readerSizes.length-1,readerSizes.indexOf(readerPreferences.size)+1)]}));
+ reset.addEventListener('click',()=>changeReader({size:100}));
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&readerPreferences.focus&&!searchDialog?.open&&!imageDialog?.open&&!event.defaultPrevented){changeReader({focus:false});focusButton.focus();}
+ });
+ addEventListener('storage',event=>{if(event.key===readerKey){readerPreferences=readReaderPreferences();renderReader(true);}});
+ renderReader();
+}else document.documentElement.classList.remove('focus-mode');
+
 document.querySelectorAll('.sidebar nav a').forEach((link,index)=>link.style.setProperty('--nav-delay',Math.min(index,7)*25+'ms'));
 
 // Keep text without paragraph/list markup in the reveal flow as well.
