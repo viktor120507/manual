@@ -1,0 +1,101 @@
+{
+  "modules": [
+    {
+      "id": "demo-2026-m2",
+      "year": 2026,
+      "number": 2,
+      "title": "Сетевое администрирование",
+      "path": "demo-2026/modul-2/",
+      "lessons": [
+        {
+          "id": "demo-2026-m2-t01",
+          "number": 1,
+          "path": "demo-2026/modul-2/zadanie-01-samba-dc/",
+          "title": "Контроллер домена Samba DC",
+          "name": "Samba DC",
+          "goal": "Создать домен, пользователей и группы; подключить клиент и настроить права."
+        },
+        {
+          "id": "demo-2026-m2-t02",
+          "number": 2,
+          "path": "demo-2026/modul-2/zadanie-02-raid-0/",
+          "title": "Дисковый массив RAID 0",
+          "name": "RAID 0",
+          "goal": "Объединить диски в массив RAID 0 и подготовить файловую систему."
+        },
+        {
+          "id": "demo-2026-m2-t03",
+          "number": 3,
+          "path": "demo-2026/modul-2/zadanie-03-nfs/",
+          "title": "Файловая система NFS",
+          "name": "NFS",
+          "goal": "Настроить общий каталог и подключить его на клиенте."
+        },
+        {
+          "id": "demo-2026-m2-t04",
+          "number": 4,
+          "path": "demo-2026/modul-2/zadanie-04-chrony/",
+          "title": "Служба времени Chrony",
+          "name": "Chrony",
+          "goal": "Настроить сервер времени на ISP и синхронизацию клиентов."
+        },
+        {
+          "id": "demo-2026-m2-t05",
+          "number": 5,
+          "path": "demo-2026/modul-2/zadanie-05-ansible/",
+          "title": "Автоматизация Ansible",
+          "name": "Ansible",
+          "goal": "Автоматизировать настройку устройств с помощью Ansible."
+        },
+        {
+          "id": "demo-2026-m2-t06",
+          "number": 6,
+          "path": "demo-2026/modul-2/zadanie-06-docker/",
+          "title": "Контейнеры Docker",
+          "name": "Docker",
+          "goal": "Развернуть приложение в контейнерах Docker."
+        },
+        {
+          "id": "demo-2026-m2-t07",
+          "number": 7,
+          "path": "demo-2026/modul-2/zadanie-07-apache-mariadb/",
+          "title": "Веб-приложение Apache",
+          "name": "Apache и MariaDB",
+          "goal": "Подготовить веб-приложение и базу данных."
+        },
+        {
+          "id": "demo-2026-m2-t08",
+          "number": 8,
+          "path": "demo-2026/modul-2/zadanie-08-probros-portov/",
+          "title": "Трансляция портов",
+          "name": "Трансляция портов",
+          "goal": "Настроить доступ к внутренним сервисам через маршрутизатор."
+        },
+        {
+          "id": "demo-2026-m2-t09",
+          "number": 9,
+          "path": "demo-2026/modul-2/zadanie-09-nginx/",
+          "title": "Обратный прокси Nginx",
+          "name": "Nginx",
+          "goal": "Настроить обратный прокси для веб-сервисов."
+        },
+        {
+          "id": "demo-2026-m2-t10",
+          "number": 10,
+          "path": "demo-2026/modul-2/zadanie-10-veb-autentifikaciya/",
+          "title": "Веб-аутентификация",
+          "name": "Веб-аутентификация",
+          "goal": "Ограничить доступ к веб-ресурсу с помощью аутентификации."
+        },
+        {
+          "id": "demo-2026-m2-t11",
+          "number": 11,
+          "path": "demo-2026/modul-2/zadanie-11-yandex-browser/",
+          "title": "Яндекс Браузер",
+          "name": "Яндекс Браузер",
+          "goal": "Установить и настроить браузер на рабочей станции."
+        }
+      ]
+    }
+  ]
+}
