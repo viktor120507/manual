@@ -49,7 +49,8 @@ const completion=document.querySelector('.task-complete');
 if(completion)completion.addEventListener('change',()=>{state=Object.assign(readState(),state);const done=new Set(completed());if(completion.checked)done.add(pageId);else done.delete(pageId);state.completed=[...done];writeState();refreshProgress();announce(completion.checked?'Задание отмечено выполненным':'Отметка выполнения снята');});
 refreshProgress();
 const themeButton=document.querySelector('.theme-toggle');
-function renderTheme(){const dark=document.documentElement.dataset.theme==='dark';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',dark?'Включить светлую тему':'Включить тёмную тему');themeButton.querySelector('span').textContent=dark?'Светлая тема':'Тёмная тема';}
+function renderTheme(){const dark=document.documentElement.dataset.theme==='dark';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',dark?'Включить светлую тему':'Включить тёмную тему');
+ themeButton.title=themeButton.getAttribute('aria-label');themeButton.querySelector('.theme-label').textContent=dark?'Светлая тема':'Тёмная тема';}
 if(themeButton){renderTheme();themeButton.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('pgk-theme',theme);}catch{}renderTheme();});}
 
 // Link buttons use existing heading IDs, keeping old bookmarks working.
