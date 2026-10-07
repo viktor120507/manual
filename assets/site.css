@@ -15,3 +15,6 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
 
 /* Module selection and catalogue spacing. */
 .module-switcher{display:flex;gap:6px;margin-bottom:12px;flex-shrink:0}.module-switcher a{flex:1;text-align:center;font-size:12px;font-weight:600;padding:7px 8px;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:var(--surface)}.module-switcher a:hover,.module-switcher a[aria-current]{color:var(--accent);border-color:var(--accent);background:var(--soft)}.home-page .lesson-grid+.module-overview{margin-top:48px}.breadcrumb{flex-wrap:wrap}@media print{.module-switcher{display:none}}
+
+/* Compact module cards on the homepage. */
++.home-page .module-overview+.module-overview{margin-top:16px}.module-action{display:grid;gap:16px;min-width:0}.module-study{display:inline-flex;align-items:center;justify-content:center;gap:18px;justify-self:start;padding:10px 17px;background:var(--accent);color:#fff;border:1px solid transparent;border-radius:9px;font-size:13px;font-weight:600;line-height:1.6;transition:background .15s}.module-study:hover{background:var(--accent-hover);color:#fff}@media(max-width:599px){.module-study{justify-self:stretch}}
