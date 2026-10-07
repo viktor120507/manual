@@ -23,7 +23,9 @@ const imageDialog=document.querySelector('.image-dialog');
 if(imageDialog){const preview=imageDialog.querySelector('img');const close=imageDialog.querySelector('.image-close');document.querySelectorAll('.contents img').forEach(img=>{img.tabIndex=0;img.setAttribute('role','button');img.setAttribute('aria-label','Увеличить изображение: '+(img.alt||'Иллюстрация'));function show(){preview.src=img.src;preview.alt=img.alt;imageDialog.showModal();}img.addEventListener('click',show);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});close.addEventListener('click',()=>imageDialog.close());imageDialog.addEventListener('click',e=>{if(e.target===imageDialog){const r=imageDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)imageDialog.close();}});}
 
 // The course manifest keeps navigation and progress ready for additional modules.
-const siteRoot=new URL('../',document.querySelector('script[src*="assets/site.js"]').src);
+const siteScript=new URL(document.querySelector('script[src*="assets/site.js"]').src);
+const siteRoot=new URL('../',siteScript);
+const dataUrl=path=>{const url=new URL(path,siteRoot);url.search=siteScript.search;return url;};
 const stateKey='pgk-reading-v1';
 function readState(){try{const value=JSON.parse(localStorage.getItem(stateKey)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch{return {};}}
 let state=readState();
@@ -31,7 +33,7 @@ function writeState(){try{localStorage.setItem(stateKey,JSON.stringify(state));r
 function validPosition(p){return p&&typeof p==='object'&&typeof p.id==='string'&&typeof p.path==='string'&&p.path.startsWith('demo-2026/')&&!p.path.includes('..')&&!p.path.includes('://')&&typeof p.title==='string'&&Number.isFinite(p.y);}
 const pageId=document.body.dataset.pageId;
 let course;
-const courseReady=fetch(new URL('assets/course-data.json',siteRoot)).then(r=>{if(!r.ok)throw new Error('course');return r.json();}).then(data=>{course=data;refreshProgress();return data;}).catch(()=>null);
+const courseReady=fetch(dataUrl('assets/course-data.json')).then(r=>{if(!r.ok)throw new Error('course');return r.json();}).then(data=>{course=data;refreshProgress();return data;}).catch(()=>null);
 function completed(){return Array.isArray(state.completed)?state.completed.filter(x=>typeof x==='string'):[];}
 function refreshProgress(){
  const done=completed();
@@ -80,7 +82,7 @@ const searchDialog=document.querySelector('.search-dialog');
 if(searchDialog){
  const input=searchDialog.querySelector('input');const results=searchDialog.querySelector('.search-results');const status=searchDialog.querySelector('.search-status');let searchData,searchRequest,searchTimer,revision=0;
  const normalize=s=>s.toLocaleLowerCase('ru').replace(/ё/g,'е');
- function getIndex(){if(!searchRequest)searchRequest=fetch(new URL('assets/search-index.json',siteRoot)).then(r=>{if(!r.ok)throw new Error('index');return r.json();}).then(data=>{searchData=data.map(x=>({...x,normalized:normalize(x.title+' '+x.section+' '+x.text),body:normalize(x.text)}));return searchData;}).catch(e=>{searchRequest=null;throw e;});return searchRequest;}
+ function getIndex(){if(!searchRequest)searchRequest=fetch(dataUrl('assets/search-index.json')).then(r=>{if(!r.ok)throw new Error('index');return r.json();}).then(data=>{searchData=data.map(x=>({...x,normalized:normalize(x.title+' '+x.section+' '+x.text),body:normalize(x.text)}));return searchData;}).catch(e=>{searchRequest=null;throw e;});return searchRequest;}
  function marked(text,tokens){const fragment=document.createDocumentFragment();const lower=normalize(text);let at=0;while(at<text.length){let start=text.length,term='';for(const token of tokens){const next=lower.indexOf(token,at);if(next>=0&&next<start){start=next;term=token;}}if(!term){fragment.append(document.createTextNode(text.slice(at)));break;}fragment.append(document.createTextNode(text.slice(at,start)));const mark=document.createElement('mark');mark.textContent=text.slice(start,start+term.length);fragment.append(mark);at=start+term.length;}return fragment;}
  async function runSearch(){const stamp=++revision;const query=input.value.trim();results.replaceChildren();const tokens=[...new Set(normalize(query).split(/\s+/).filter(Boolean))];if(!tokens.length){status.textContent='Введите текст для поиска.';return;}status.textContent='Ищем в заданиях и командах…';try{const data=await getIndex();if(stamp!==revision)return;const matches=data.filter(x=>tokens.every(t=>x.normalized.includes(t))).map(x=>({...x,score:tokens.reduce((n,t)=>n+(normalize(x.title).includes(t)?8:0)+(normalize(x.section).includes(t)?4:0)+(x.body.includes(t)?1:0),0)})).sort((a,b)=>b.score-a.score);
  status.textContent=matches.length?'Найдено разделов: '+matches.length+(matches.length>30?'. Показаны первые 30.':''):'Ничего не найдено. Попробуйте другое слово или команду.';

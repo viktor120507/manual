@@ -1,6 +1,103 @@
 {
   "modules": [
     {
+      "id": "demo-2026-m1",
+      "year": 2026,
+      "number": 1,
+      "title": "Настройка сетевой инфраструктуры",
+      "path": "demo-2026/modul-1/",
+      "lessons": [
+        {
+          "id": "demo-2026-m1-t01",
+          "number": 1,
+          "path": "demo-2026/modul-1/zadanie-01-bazovaya-nastroyka/",
+          "title": "Базовая настройка устройств",
+          "name": "Имена и адресация",
+          "goal": "Задать имена устройств, рассчитать подсети и настроить сетевые интерфейсы."
+        },
+        {
+          "id": "demo-2026-m1-t02",
+          "number": 2,
+          "path": "demo-2026/modul-1/zadanie-02-internet-isp/",
+          "title": "Доступ в Интернет на ISP",
+          "name": "Интернет на ISP",
+          "goal": "Подключить ISP к Интернету и настроить связь с офисами HQ и BR."
+        },
+        {
+          "id": "demo-2026-m1-t03",
+          "number": 3,
+          "path": "demo-2026/modul-1/zadanie-03-lokalnye-polzovateli/",
+          "title": "Локальные пользователи",
+          "name": "Пользователи",
+          "goal": "Создать пользователей на серверах и маршрутизаторах, настроить права sudo."
+        },
+        {
+          "id": "demo-2026-m1-t04",
+          "number": 4,
+          "path": "demo-2026/modul-1/zadanie-04-vlan/",
+          "title": "Коммутация VLAN",
+          "name": "VLAN",
+          "goal": "Разделить сеть HQ на VLAN 100, 200 и 999 и настроить маршрутизацию."
+        },
+        {
+          "id": "demo-2026-m1-t05",
+          "number": 5,
+          "path": "demo-2026/modul-1/zadanie-05-ssh/",
+          "title": "Безопасный доступ SSH",
+          "name": "SSH",
+          "goal": "Настроить порт 2026, разрешённых пользователей и параметры доступа SSH."
+        },
+        {
+          "id": "demo-2026-m1-t06",
+          "number": 6,
+          "path": "demo-2026/modul-1/zadanie-06-gre/",
+          "title": "Туннель GRE",
+          "name": "GRE",
+          "goal": "Соединить офисы HQ и BR туннелем GRE и проверить доступность."
+        },
+        {
+          "id": "demo-2026-m1-t07",
+          "number": 7,
+          "path": "demo-2026/modul-1/zadanie-07-ospf/",
+          "title": "Динамическая маршрутизация OSPF",
+          "name": "OSPF",
+          "goal": "Настроить OSPF между офисами и аутентификацию соседей."
+        },
+        {
+          "id": "demo-2026-m1-t08",
+          "number": 8,
+          "path": "demo-2026/modul-1/zadanie-08-nat/",
+          "title": "Трансляция адресов NAT",
+          "name": "NAT",
+          "goal": "Настроить NAT на маршрутизаторах HQ и BR для выхода локальных сетей в Интернет."
+        },
+        {
+          "id": "demo-2026-m1-t09",
+          "number": 9,
+          "path": "demo-2026/modul-1/zadanie-09-dhcp/",
+          "title": "Сервер DHCP",
+          "name": "DHCP",
+          "goal": "Настроить выдачу адресов для HQ-CLI и проверить параметры клиента."
+        },
+        {
+          "id": "demo-2026-m1-t10",
+          "number": 10,
+          "path": "demo-2026/modul-1/zadanie-10-dns-bind/",
+          "title": "DNS-сервер BIND",
+          "name": "DNS и BIND",
+          "goal": "Создать прямую и обратную зоны на HQ-SRV и проверить разрешение имён."
+        },
+        {
+          "id": "demo-2026-m1-t11",
+          "number": 11,
+          "path": "demo-2026/modul-1/zadanie-11-chasovoy-poyas/",
+          "title": "Часовой пояс",
+          "name": "Часовой пояс",
+          "goal": "Установить нужный часовой пояс на устройствах стенда."
+        }
+      ]
+    },
+    {
       "id": "demo-2026-m2",
       "year": 2026,
       "number": 2,
