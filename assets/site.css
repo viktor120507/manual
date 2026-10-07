@@ -27,3 +27,61 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
 .topbar .header-search{flex:0 1 auto;min-width:0;min-height:38px;gap:10px}.header-search svg{width:18px;height:18px;flex-shrink:0}.header-search .search-label{white-space:nowrap}.header-search kbd{margin-left:12px}
 @media(max-width:899px){.header-search kbd{display:none}}
 @media(max-width:799px){.topbar .header-search{width:38px;height:38px;padding:9px;justify-content:center}.header-search .search-label{display:none}}
+
+/* Motion follows the existing violet palette without changing layout or tab sizes. */
+:root{--motion-ease:cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:no-preference){
+ .motion-enabled .motion-pending{opacity:0;translate:0 16px}
+ .motion-enabled .motion-revealed{animation:pgk-reveal 620ms var(--motion-ease) var(--reveal-delay,0ms) both}
+ .motion-enabled .topbar{animation:pgk-header 500ms var(--motion-ease) both}
+ .motion-enabled .brand-symbol{transition:transform 360ms var(--motion-ease),box-shadow 360ms}
+ .motion-enabled .module-card{background-size:160% 160%;animation:pgk-gradient 1400ms var(--motion-ease) both}
+ .motion-enabled :is(.tool-button,.module-switcher a,.menu-button,.social-link,.pagination a,.module-study,.section-share,.toolbar button,.search-result){transition:transform 250ms var(--motion-ease),background-color 250ms,border-color 250ms,color 250ms,box-shadow 250ms,filter 250ms}
+ .motion-enabled .module-study{position:relative;overflow:hidden;isolation:isolate}
+ .motion-enabled .module-study::before{content:'';position:absolute;inset:-50% -25%;background:linear-gradient(110deg,transparent 35%,#ffffff22 49%,transparent 63%);transform:translateX(-110%);pointer-events:none;z-index:-1}
+ .motion-enabled .module-study:is(:hover,:focus-visible)::before{animation:pgk-sheen 850ms var(--motion-ease)}
+ .motion-enabled .module-study span{transition:transform 300ms var(--motion-ease)}
+ .motion-enabled .module-overview{transition:border-color 300ms,box-shadow 300ms}
+ .motion-enabled .sidebar nav a{transition:background-color 230ms,color 230ms,translate 260ms var(--motion-ease)}
+ .motion-enabled .nav-number{transition:background-color 250ms,color 250ms,transform 300ms var(--motion-ease)}
+ .motion-enabled .contents :is(.code-toolbar,img){transition:box-shadow 300ms,border-color 300ms,transform 350ms var(--motion-ease)}
+ .motion-enabled .reading-progress span{transition:width 120ms linear}
+ .motion-enabled .search-dialog[open]:not([data-closing]),.motion-enabled .image-dialog[open]:not([data-closing]){animation:pgk-dialog 380ms var(--motion-ease) both}
+ .motion-enabled dialog[open]::backdrop{animation:pgk-fade 260ms ease both}
+ .motion-enabled dialog[data-closing]::backdrop{animation:pgk-fade 180ms ease reverse both}
+ .motion-enabled .search-result{animation:pgk-reveal 400ms var(--motion-ease) var(--result-delay,0ms) both}
+ .motion-enabled .mobile-toc[open] nav{animation:pgk-reveal 330ms var(--motion-ease) both}
+ .motion-enabled .menu-button svg{transition:transform 350ms var(--motion-ease)}
+ .motion-enabled .menu-button[aria-expanded=true] svg{transform:rotate(90deg)}
+ .motion-enabled .contents :is(h1,h2,h3):target{animation:pgk-anchor 1000ms ease}
+ .motion-enabled :is(.tool-button,.module-study,.social-link,.module-switcher a,.toolbar button):active{transform:scale(.97)}
+ .theme-changing body,.theme-changing :is(.topbar,.sidebar,.sidebar-source,article,.module-overview,.contact-footer,.tool-button,.mobile-toc,.task-state,.nav-number,.pagination a,.contents code,.contents th){transition:background-color 450ms ease,color 450ms ease,border-color 450ms ease}
+ @media(hover:hover) and (pointer:fine){
+  .motion-enabled :is(.tool-button,.module-switcher a,.social-link,.pagination a,.module-study):hover{transform:translateY(-2px);box-shadow:0 6px 18px #743ce618}
+  .motion-enabled .module-overview:hover{border-color:var(--accent);box-shadow:0 10px 30px #743ce612}
+  .motion-enabled .module-study:hover span{transform:translate(3px,-3px)}
+  .motion-enabled .sidebar nav a:hover{translate:3px 0}
+  .motion-enabled .sidebar nav a:hover .nav-number{transform:scale(1.07)}
+  .motion-enabled .brand:hover .brand-symbol{transform:rotate(-6deg) scale(1.04);box-shadow:0 6px 20px #743ce633}
+  .motion-enabled .contents .code-toolbar:hover{border-color:#8f67c0;box-shadow:0 8px 24px #743ce618}
+  .motion-enabled .contents img:hover{transform:scale(1.006);border-color:var(--accent);box-shadow:0 8px 28px #743ce618}
+ }
+ @media(max-width:1023px){
+  .motion-enabled .sidebar{transition:transform 420ms var(--motion-ease)}
+  .motion-enabled .sidebar.open :is(.module-switcher,.module-card){animation:pgk-nav 420ms var(--motion-ease) 70ms both}
+  .motion-enabled .sidebar.open nav a{animation:pgk-nav 380ms var(--motion-ease) calc(100ms + var(--nav-delay,0ms)) both}
+ }
+}
+/* Toasts retain their position while fading in and out. */
+.toast{display:block;opacity:0;visibility:hidden;pointer-events:none;translate:0 8px;transition:opacity 200ms ease,translate 250ms var(--motion-ease),visibility 200ms}
+.toast.visible{opacity:1;visibility:visible;translate:0 0}
+@keyframes pgk-reveal{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
+@keyframes pgk-nav{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes pgk-header{from{opacity:0;translate:0 -8px}to{opacity:1;translate:0 0}}
+@keyframes pgk-dialog{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pgk-fade{from{opacity:0}to{opacity:1}}
+@keyframes pgk-gradient{from{background-position:0% 0%}to{background-position:100% 100%}}
+@keyframes pgk-sheen{to{transform:translateX(110%)}}
+@keyframes pgk-anchor{0%,100%{background:transparent}35%{background:var(--soft)}}
+@media(prefers-reduced-motion:reduce){.motion-pending{opacity:1!important;translate:none!important}.toast{translate:none}}
+@media print{.motion-pending,.motion-revealed{opacity:1!important;translate:none!important;animation:none!important}.toast{display:none!important}}

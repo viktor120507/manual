@@ -1,16 +1,49 @@
 'use strict';
+// One motion preference is shared by reveals, dialogs and interaction feedback.
+const motionPreference=matchMedia('(prefers-reduced-motion: reduce)');
+const motionJobs=new WeakMap();
+const dialogClosings=new WeakMap();
+function animateElement(element,frames,options={}){
+ if(!element||motionPreference.matches||!element.animate)return null;
+ motionJobs.get(element)?.cancel();
+ const animation=element.animate(frames,{duration:360,easing:'cubic-bezier(.22,1,.36,1)',...options});
+ motionJobs.set(element,animation);
+ animation.finished.catch(()=>{}).then(()=>{if(motionJobs.get(element)===animation)motionJobs.delete(element);});
+ return animation;
+}
+function setBackdrop(open){
+ if(!backdrop)return;
+ motionJobs.get(backdrop)?.cancel();
+ if(open){backdrop.hidden=false;animateElement(backdrop,[{opacity:0},{opacity:1}],{duration:280});}
+ else if(!backdrop.hidden){const animation=animateElement(backdrop,[{opacity:1},{opacity:0}],{duration:200});
+  if(animation)animation.finished.then(()=>{if(!sidebar.classList.contains('open'))backdrop.hidden=true;}).catch(()=>{});
+  else backdrop.hidden=true;
+ }
+}
+function openDialog(dialog){
+ dialogClosings.get(dialog)?.cancel();dialogClosings.delete(dialog);delete dialog.dataset.closing;
+ if(!dialog.open)dialog.showModal();
+}
+function closeDialog(dialog){
+ if(!dialog.open||dialogClosings.has(dialog))return;
+ if(motionPreference.matches||!dialog.animate){dialog.close();return;}
+ dialog.dataset.closing='true';
+ const animation=dialog.animate([{opacity:1,transform:'translateY(0) scale(1)'},{opacity:0,transform:'translateY(10px) scale(.98)'}],{duration:180,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
+ dialogClosings.set(dialog,animation);
+ animation.finished.catch(()=>{}).then(()=>{if(dialogClosings.get(dialog)!==animation)return;dialog.close();delete dialog.dataset.closing;dialogClosings.delete(dialog);animation.cancel();});
+}
 const menu=document.querySelector('.menu-button');
 const sidebar=document.querySelector('.sidebar');
 const backdrop=document.querySelector('.menu-backdrop');
 const mobile=matchMedia('(max-width:1023px)');
-function setMenu(open){sidebar.classList.toggle('open',open);menu.setAttribute('aria-expanded',String(open));if(backdrop)backdrop.hidden=!open;document.body.classList.toggle('menu-open',open&&mobile.matches);sidebar.inert=mobile.matches&&!open;}
+function setMenu(open){sidebar.classList.toggle('open',open);menu.setAttribute('aria-expanded',String(open));setBackdrop(open);document.body.classList.toggle('menu-open',open&&mobile.matches);sidebar.inert=mobile.matches&&!open;}
 menu.addEventListener('click',()=>setMenu(!sidebar.classList.contains('open')));
 if(backdrop)backdrop.addEventListener('click',()=>setMenu(false));
 mobile.addEventListener('change',()=>setMenu(false));
 setMenu(false);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sidebar.classList.contains('open')){setMenu(false);menu.focus();}});
 let toastTimer;
-function announce(message){const toast=document.querySelector('.toast');toast.textContent=message;toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('visible'),2200);}
+function announce(message){const toast=document.querySelector('.toast');toast.textContent=message;toast.classList.add('visible');animateElement(toast,[{opacity:0,translate:'0 8px'},{opacity:1,translate:'0 0'}],{duration:260});clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('visible'),2200);}
 async function copy(text){if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return;}const area=document.createElement('textarea');area.value=text;area.style.position='fixed';area.style.left='-9999px';document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();if(!ok)throw new Error('copy failed');}
 const copyIcon='<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="6" y="6" width="9" height="9" rx="2"/><path d="M11 3H5a2 2 0 0 0-2 2v6"/></svg>';
 document.querySelectorAll('.code-toolbar').forEach(box=>{const button=box.querySelector('.toolbar button');const code=box.querySelector('pre code');const toolbar=box.querySelector('.toolbar');if(!button||!code||!toolbar)return;const label=document.createElement('span');label.className='code-label';label.textContent='>_  Код';toolbar.prepend(label);button.innerHTML=copyIcon+'<span>Копировать</span>';button.type='button';button.setAttribute('aria-label','Копировать команду');button.addEventListener('click',async()=>{try{await copy(code.textContent);button.querySelector('span').textContent='Скопировано';announce('Команда скопирована');setTimeout(()=>button.querySelector('span').textContent='Копировать',1800);}catch{announce('Не удалось скопировать. Выделите команду вручную.');}});});
@@ -20,7 +53,7 @@ let scheduled=false;
 function updateReading(){scheduled=false;const range=document.documentElement.scrollHeight-innerHeight;const progress=document.querySelector('.reading-progress span');if(progress)progress.style.width=(range>0?Math.min(100,scrollY/range*100):0)+'%';let active=headings[0];for(const h of headings){if(h.getBoundingClientRect().top<=150)active=h;else break;}tocLinks.forEach(a=>{const match=active&&decodeURIComponent(a.hash.slice(1))===active.id;a.classList.toggle('active',!!match);if(match)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});}
 addEventListener('scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(updateReading);}},{passive:true});addEventListener('resize',updateReading);addEventListener('load',updateReading);updateReading();
 const imageDialog=document.querySelector('.image-dialog');
-if(imageDialog){const preview=imageDialog.querySelector('img');const close=imageDialog.querySelector('.image-close');document.querySelectorAll('.contents img').forEach(img=>{img.tabIndex=0;img.setAttribute('role','button');img.setAttribute('aria-label','Увеличить изображение: '+(img.alt||'Иллюстрация'));function show(){preview.src=img.src;preview.alt=img.alt;imageDialog.showModal();}img.addEventListener('click',show);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});close.addEventListener('click',()=>imageDialog.close());imageDialog.addEventListener('click',e=>{if(e.target===imageDialog){const r=imageDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)imageDialog.close();}});}
+if(imageDialog){const preview=imageDialog.querySelector('img');const close=imageDialog.querySelector('.image-close');document.querySelectorAll('.contents img').forEach(img=>{img.tabIndex=0;img.setAttribute('role','button');img.setAttribute('aria-label','Увеличить изображение: '+(img.alt||'Иллюстрация'));function show(){preview.src=img.src;preview.alt=img.alt;openDialog(imageDialog);}img.addEventListener('click',show);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();show();}});});close.addEventListener('click',()=>closeDialog(imageDialog));imageDialog.addEventListener('click',e=>{if(e.target===imageDialog){const r=imageDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog(imageDialog);}});}
 
 // The course manifest keeps navigation and progress ready for additional modules.
 const siteScript=new URL(document.querySelector('script[src*="assets/site.js"]').src);
@@ -46,12 +79,13 @@ function refreshProgress(){
  const checkbox=document.querySelector('.task-complete');if(checkbox)checkbox.checked=done.includes(pageId);
 }
 const completion=document.querySelector('.task-complete');
-if(completion)completion.addEventListener('change',()=>{state=Object.assign(readState(),state);const done=new Set(completed());if(completion.checked)done.add(pageId);else done.delete(pageId);state.completed=[...done];writeState();refreshProgress();announce(completion.checked?'Задание отмечено выполненным':'Отметка выполнения снята');});
+if(completion)completion.addEventListener('change',()=>{state=Object.assign(readState(),state);const done=new Set(completed());if(completion.checked)done.add(pageId);else done.delete(pageId);state.completed=[...done];writeState();refreshProgress();animateElement(completion.closest('.task-state'),[{boxShadow:'0 0 0 0 #743ce635'},{boxShadow:'0 0 0 9px #743ce600'},{boxShadow:'0 0 0 0 #743ce600'}],{duration:600});announce(completion.checked?'Задание отмечено выполненным':'Отметка выполнения снята');});
 refreshProgress();
 const themeButton=document.querySelector('.theme-toggle');
+let themeTimer;
 function renderTheme(){const dark=document.documentElement.dataset.theme==='dark';themeButton.setAttribute('aria-pressed',String(dark));themeButton.setAttribute('aria-label',dark?'Включить светлую тему':'Включить тёмную тему');
  themeButton.title=themeButton.getAttribute('aria-label');themeButton.querySelector('.theme-label').textContent=dark?'Светлая тема':'Тёмная тема';}
-if(themeButton){renderTheme();themeButton.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('pgk-theme',theme);}catch{}renderTheme();});}
+if(themeButton){renderTheme();themeButton.addEventListener('click',()=>{document.documentElement.classList.add('theme-changing');clearTimeout(themeTimer);themeTimer=setTimeout(()=>document.documentElement.classList.remove('theme-changing'),550);const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('pgk-theme',theme);}catch{}renderTheme();animateElement(themeButton.querySelector(theme==='dark'?'.theme-sun':'.theme-moon'),[{transform:'rotate(-40deg) scale(.7)',opacity:.2},{transform:'rotate(0) scale(1)',opacity:1}],{duration:480});});}
 
 // Link buttons use existing heading IDs, keeping old bookmarks working.
 headings.forEach(h=>{const title=h.textContent.replace('¶','').trim();const button=document.createElement('button');button.type='button';button.className='section-share';button.textContent='#';button.title='Копировать ссылку на раздел';button.setAttribute('aria-label','Копировать ссылку: '+title);button.addEventListener('click',async()=>{const url=new URL(location.href);url.search='';url.hash=h.id;try{await copy(url.href);announce('Ссылка на раздел скопирована');}catch{announce('Не удалось скопировать ссылку. Используйте содержание страницы.');}});h.append(button);});
@@ -87,10 +121,42 @@ if(searchDialog){
  function marked(text,tokens){const fragment=document.createDocumentFragment();const lower=normalize(text);let at=0;while(at<text.length){let start=text.length,term='';for(const token of tokens){const next=lower.indexOf(token,at);if(next>=0&&next<start){start=next;term=token;}}if(!term){fragment.append(document.createTextNode(text.slice(at)));break;}fragment.append(document.createTextNode(text.slice(at,start)));const mark=document.createElement('mark');mark.textContent=text.slice(start,start+term.length);fragment.append(mark);at=start+term.length;}return fragment;}
  async function runSearch(){const stamp=++revision;const query=input.value.trim();results.replaceChildren();const tokens=[...new Set(normalize(query).split(/\s+/).filter(Boolean))];if(!tokens.length){status.textContent='Введите текст для поиска.';return;}status.textContent='Ищем в заданиях и командах…';try{const data=await getIndex();if(stamp!==revision)return;const matches=data.filter(x=>tokens.every(t=>x.normalized.includes(t))).map(x=>({...x,score:tokens.reduce((n,t)=>n+(normalize(x.title).includes(t)?8:0)+(normalize(x.section).includes(t)?4:0)+(x.body.includes(t)?1:0),0)})).sort((a,b)=>b.score-a.score);
  status.textContent=matches.length?'Найдено разделов: '+matches.length+(matches.length>30?'. Показаны первые 30.':''):'Ничего не найдено. Попробуйте другое слово или команду.';
- for(const item of matches.slice(0,30)){const link=document.createElement('a');link.className='search-result';link.href=new URL(item.url,siteRoot).href;const title=document.createElement('strong');title.append(marked(item.title,tokens));const section=document.createElement('small');section.append(marked(item.section||'Обзор',tokens));const snippet=document.createElement('p');const hits=tokens.map(t=>item.body.indexOf(t)).filter(i=>i>=0);const offset=Math.max(0,(hits.length?Math.min(...hits):0)-70);snippet.append(marked((offset?'…':'')+item.text.slice(offset,offset+230)+(item.text.length>offset+230?'…':''),tokens));link.append(title,section,snippet);results.append(link);}
+ let resultIndex=0;for(const item of matches.slice(0,30)){const link=document.createElement('a');link.className='search-result';link.style.setProperty('--result-delay',Math.min(resultIndex++,6)*35+'ms');link.href=new URL(item.url,siteRoot).href;const title=document.createElement('strong');title.append(marked(item.title,tokens));const section=document.createElement('small');section.append(marked(item.section||'Обзор',tokens));const snippet=document.createElement('p');const hits=tokens.map(t=>item.body.indexOf(t)).filter(i=>i>=0);const offset=Math.max(0,(hits.length?Math.min(...hits):0)-70);snippet.append(marked((offset?'…':'')+item.text.slice(offset,offset+230)+(item.text.length>offset+230?'…':''),tokens));link.append(title,section,snippet);results.append(link);}
  }catch{if(stamp===revision)status.textContent='Не удалось загрузить поиск. Проверьте соединение и повторите ввод.';}}
- function openSearch(){setMenu(false);searchDialog.showModal();input.focus();runSearch();}
- document.querySelectorAll('.search-open').forEach(b=>b.addEventListener('click',openSearch));searchDialog.querySelector('.search-close').addEventListener('click',()=>searchDialog.close());input.addEventListener('input',()=>{revision++;clearTimeout(searchTimer);searchTimer=setTimeout(runSearch,120);});input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();results.querySelector('a')?.focus();}if(e.key==='Enter'){const first=results.querySelector('a');if(first){e.preventDefault();first.click();}}});
+ function openSearch(){setMenu(false);openDialog(searchDialog);input.focus();runSearch();}
+ document.querySelectorAll('.search-open').forEach(b=>b.addEventListener('click',openSearch));searchDialog.querySelector('.search-close').addEventListener('click',()=>closeDialog(searchDialog));input.addEventListener('input',()=>{revision++;clearTimeout(searchTimer);searchTimer=setTimeout(runSearch,120);});input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();results.querySelector('a')?.focus();}if(e.key==='Enter'){const first=results.querySelector('a');if(first){e.preventDefault();first.click();}}});
  document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!searchDialog.open)openSearch();}});
- searchDialog.addEventListener('click',e=>{if(e.target===searchDialog){const r=searchDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)searchDialog.close();}});
+ searchDialog.addEventListener('click',e=>{if(e.target===searchDialog){const r=searchDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog(searchDialog);}});
 }
+
+document.querySelectorAll('.sidebar nav a').forEach((link,index)=>link.style.setProperty('--nav-delay',Math.min(index,7)*25+'ms'));
+
+// Reveal each block once; hash targets and restored reading positions stay visible.
+const revealCandidates=[...document.querySelectorAll('.breadcrumb,.page-title,.reader-tools,.task-state,.resume-banner,.module-overview,.pagination,.contact-footer,.contents h1,.contents h2,.contents h3,.contents .code-toolbar,.contents blockquote,.contents table,.contents .diagram,.contents img')].map(element=>element.matches('img')?(element.closest('p')||element):element);
+const revealTargets=[...new Set(revealCandidates)].filter(element=>!revealCandidates.some(parent=>parent!==element&&parent.contains(element)));
+let revealObserver;
+function reveal(element,delay=0){element.style.setProperty('--reveal-delay',delay+'ms');element.classList.remove('motion-pending');element.classList.add('motion-revealed');}
+function prepareMotion(){
+ revealObserver?.disconnect();
+ document.documentElement.classList.toggle('motion-enabled',!motionPreference.matches);
+ if(motionPreference.matches){revealTargets.forEach(element=>{element.classList.remove('motion-pending','motion-revealed');element.style.removeProperty('--reveal-delay');});return;}
+ if(!('IntersectionObserver' in window))return;
+ revealObserver=new IntersectionObserver(entries=>{let index=0;for(const entry of entries){if(!entry.isIntersecting)continue;reveal(entry.target,Math.min(index++,4)*55);revealObserver.unobserve(entry.target);}},{threshold:0,rootMargin:'0px 0px -20px 0px'});
+ let initialIndex=0;
+ for(const element of revealTargets){
+  if(element.classList.contains('motion-revealed'))continue;
+  const rect=element.getBoundingClientRect();
+  if(rect.bottom<0){reveal(element);continue;}
+  if(location.hash&&element.closest('.contents')){reveal(element);continue;}
+  if(rect.top<innerHeight&&rect.bottom>0)reveal(element,Math.min(initialIndex++,5)*65);
+  else{element.classList.add('motion-pending');revealObserver.observe(element);}
+ }
+}
+for(const dialog of document.querySelectorAll('.search-dialog,.image-dialog')){
+ dialog.addEventListener('cancel',event=>{event.preventDefault();closeDialog(dialog);});
+}
+// Never leave a keyboard focus or a direct section link inside an invisible block.
+document.addEventListener('focusin',event=>{event.target.closest('.motion-pending')?.classList.remove('motion-pending');});
+addEventListener('hashchange',()=>{const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(target){target.closest('.motion-pending')?.classList.remove('motion-pending');target.querySelectorAll('.motion-pending').forEach(element=>element.classList.remove('motion-pending'));}});
+motionPreference.addEventListener('change',prepareMotion);
+prepareMotion();
