@@ -154,7 +154,6 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 .welcome-credit h3 a{color:var(--accent)}
 .welcome-credit h3 a:hover{text-decoration:underline;text-underline-offset:4px}
 .welcome-credit .welcome-thanks{margin-top:12px;color:var(--ink);font-size:13px;font-weight:550}
-.welcome-dialog .welcome-hosting{margin-top:16px;font-size:12px;line-height:1.6}
 .welcome-contacts{margin-top:22px}
 .welcome-contacts .social-links{margin-top:9px}
 .welcome-contacts .social-link{min-height:42px;font-size:12px;justify-content:center;padding:9px 10px}

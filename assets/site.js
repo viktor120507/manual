@@ -151,7 +151,6 @@ welcomeDialog.innerHTML=`<button class="tool-button welcome-close" type="button"
    <p>Материалы мануала взяты с этого сайта. Авторство учебных материалов принадлежит его разработчику — я сделал их удобнее для чтения и подготовки.</p>
    <p class="welcome-thanks">Спасибо разработчику «Я у мамы сисадмин» за создание мануала и работу, которая помогает нам учиться!</p>
   </section>
-  <p class="welcome-hosting">Для надёжного доступа к материалам практикум размещён на GitHub Pages.</p>
   <div class="welcome-contacts"><span class="welcome-eyebrow">Мои соцсети</span></div>
  </div>
  <div class="welcome-actions"><label class="welcome-preference"><input class="welcome-skip" type="checkbox">Не показывать при открытии</label><button class="welcome-start" type="button">Перейти к изучению <span aria-hidden="true">→</span></button></div>`;
