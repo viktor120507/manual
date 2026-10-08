@@ -404,7 +404,6 @@ setupRingCursor();
 
 // Interaction motion decorates controls without delaying clicks or navigation.
 function setupInteractionMotion(){
- const finePointer=matchMedia('(hover:hover) and (pointer:fine)');
  const actions='button:not(.menu-backdrop),.module-study,.social-link,.module-switcher a,.pagination a,.start-links a,.search-result,.sidebar nav a';
  document.querySelectorAll(actions).forEach(element=>element.classList.add('motion-surface'));
  document.addEventListener('click',event=>{
@@ -421,38 +420,9 @@ function setupInteractionMotion(){
   ripple.className='button-ripple';ripple.setAttribute('aria-hidden','true');
   Object.assign(ripple.style,{left:x+'px',top:y+'px',width:diameter+'px',height:diameter+'px'});
   control.append(ripple);
-  const animation=animateElement(ripple,[{transform:'translate(-50%,-50%) scale(.02)',opacity:.7},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:620});
+  const animation=animateElement(ripple,[{transform:'translate(-50%,-50%) scale(.02)',opacity:.28},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:'cubic-bezier(.4,0,.2,1)'});
   if(animation)animation.finished.catch(()=>{}).then(()=>ripple.remove());else ripple.remove();
  });
- const magnets=[...document.querySelectorAll('.module-study,.welcome-start,.contact-footer .social-link')];
- let frame=0,current=null,x=0,y=0;
- function reset(element){element?.style.removeProperty('--magnet-x');element?.style.removeProperty('--magnet-y');}
- function stop(){if(frame)cancelAnimationFrame(frame);frame=0;reset(current);current=null;}
- function paint(){
-  frame=0;
-  if(!current||motionPreference.matches||!finePointer.matches){stop();return;}
-  const rect=current.getBoundingClientRect();
-  current.style.setProperty('--magnet-x',Math.max(-3,Math.min(3,(x-rect.left-rect.width/2)*.035))+'px');
-  current.style.setProperty('--magnet-y',Math.max(-2,Math.min(2,(y-rect.top-rect.height/2)*.06))+'px');
- }
- for(const element of magnets){
-  element.classList.add('motion-magnet');
-  element.addEventListener('pointerenter',event=>{
-   if(event.pointerType!=='mouse'||motionPreference.matches||!finePointer.matches)return;
-   const rect=element.getBoundingClientRect();
-   element.style.setProperty('--fill-x',Math.max(0,Math.min(100,(event.clientX-rect.left)/rect.width*100))+'%');
-   element.style.setProperty('--fill-y',Math.max(0,Math.min(100,(event.clientY-rect.top)/rect.height*100))+'%');
-  },{passive:true});
-  element.addEventListener('pointermove',event=>{
-   if(event.pointerType!=='mouse'||motionPreference.matches||!finePointer.matches)return;
-   if(current!==element){reset(current);current=element;}
-   x=event.clientX;y=event.clientY;if(!frame)frame=requestAnimationFrame(paint);
-  },{passive:true});
-  element.addEventListener('pointerleave',()=>{if(current===element)stop();},{passive:true});
-  element.addEventListener('pointercancel',stop,{passive:true});
- }
- finePointer.addEventListener('change',stop);motionPreference.addEventListener('change',()=>{stop();document.querySelectorAll('.button-ripple').forEach(element=>element.remove());});
- addEventListener('blur',stop);addEventListener('scroll',stop,{passive:true});
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+ motionPreference.addEventListener('change',()=>{document.querySelectorAll('.button-ripple').forEach(element=>element.remove());});
 }
 setupInteractionMotion();
