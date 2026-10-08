@@ -17,7 +17,7 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
 .module-switcher{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px;flex-shrink:0}.module-switcher a{display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:34px;padding:0 4px;text-align:center;font-size:12px;font-weight:600;line-height:1;white-space:nowrap;border:1px solid var(--line);border-radius:8px;color:var(--muted);background:var(--surface)}.module-switcher a:hover,.module-switcher a[aria-current]{color:var(--accent);border-color:var(--accent);background:var(--soft)}.home-page .lesson-grid+.module-overview{margin-top:48px}.breadcrumb{flex-wrap:wrap}@media print{.module-switcher{display:none}}
 
 /* Compact module cards on the homepage. */
-+.home-page .module-overview+.module-overview{margin-top:16px}.module-action{display:grid;gap:16px;min-width:0}.module-study{display:inline-flex;align-items:center;justify-content:center;gap:18px;justify-self:start;padding:10px 17px;background:linear-gradient(135deg,#7b42e9,#5830b1);color:#fff;border:1px solid transparent;border-radius:9px;font-size:13px;font-weight:600;line-height:1.6;transition:filter .15s}.module-study:hover{filter:brightness(1.015);color:#fff}@media(max-width:599px){.module-study{justify-self:stretch}}
++.home-page .module-overview+.module-overview{margin-top:16px}.module-action{display:grid;gap:16px;min-width:0}.module-study{display:inline-flex;align-items:center;justify-content:center;gap:18px;justify-self:start;padding:10px 17px;background:linear-gradient(135deg,#7b42e9,#5830b1);color:#fff;border:1px solid transparent;border-radius:9px;font-size:13px;font-weight:600;line-height:1.6;transition:filter .15s}.module-study:hover{filter:brightness(.94);color:#fff}@media(max-width:599px){.module-study{justify-self:stretch}}
 
 /* Theme control stays in the header while reading. */
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}.header-actions .header-badge{margin-left:0}.topbar .theme-toggle{flex-shrink:0;min-height:38px}.theme-toggle svg{width:18px;height:18px;flex-shrink:0}.theme-toggle .theme-sun{display:none}html[data-theme=dark] .theme-toggle .theme-moon{display:none}html[data-theme=dark] .theme-toggle .theme-sun{display:block}
@@ -29,20 +29,20 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
 @media(max-width:799px){.topbar .header-search{width:38px;height:38px;padding:9px;justify-content:center}.header-search .search-label{display:none}}
 
 /* Motion follows the existing violet palette without changing layout or tab sizes. */
-:root{--motion-ease:cubic-bezier(.22,1,.36,1);--control-ease:cubic-bezier(.4,0,.2,1)}
+:root{--motion-ease:cubic-bezier(.22,1,.36,1)}
 @media(prefers-reduced-motion:no-preference){
  .motion-enabled .motion-pending{opacity:0;translate:0 16px}
  .motion-enabled .motion-revealed{animation:pgk-reveal 620ms var(--motion-ease) var(--reveal-delay,0ms) both}
  .motion-enabled .topbar{animation:pgk-header 500ms var(--motion-ease) both}
  .motion-enabled .brand-symbol{transition:transform 360ms var(--motion-ease),box-shadow 360ms}
  .motion-enabled .module-card{background-size:160% 160%;animation:pgk-gradient 1400ms var(--motion-ease) both}
- .motion-enabled :is(.tool-button,.module-switcher a,.menu-button,.social-link,.pagination a,.module-study,.welcome-start,.section-share,.toolbar button,.search-result,.search-close,.image-close,.welcome-close){transition:transform 400ms var(--control-ease),background-color 550ms var(--control-ease),border-color 450ms var(--control-ease),color 450ms var(--control-ease),box-shadow 550ms var(--control-ease),filter 450ms var(--control-ease)}
+ .motion-enabled :is(.tool-button,.module-switcher a,.menu-button,.social-link,.pagination a,.module-study,.section-share,.toolbar button,.search-result){transition:transform 250ms var(--motion-ease),background-color 250ms,border-color 250ms,color 250ms,box-shadow 250ms,filter 250ms}
  .motion-enabled .module-study{position:relative;overflow:hidden;isolation:isolate}
- .motion-enabled .module-study::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 15%,#ffffff0b 50%,transparent 85%);opacity:0;transition:opacity 600ms var(--control-ease);pointer-events:none;z-index:-1}
- .motion-enabled .module-study:is(:hover,:focus-visible)::before{opacity:1}
- .motion-enabled .module-study span{transition:transform 450ms var(--control-ease)}
+ .motion-enabled .module-study::before{content:'';position:absolute;inset:-50% -25%;background:linear-gradient(110deg,transparent 35%,#ffffff22 49%,transparent 63%);transform:translateX(-110%);pointer-events:none;z-index:-1}
+ .motion-enabled .module-study:is(:hover,:focus-visible)::before{animation:pgk-sheen 850ms var(--motion-ease)}
+ .motion-enabled .module-study span{transition:transform 300ms var(--motion-ease)}
  .motion-enabled .module-overview{transition:border-color 300ms,box-shadow 300ms}
- .motion-enabled .sidebar nav a{transition:background-color 550ms var(--control-ease),color 450ms var(--control-ease)}
+ .motion-enabled .sidebar nav a{transition:background-color 230ms,color 230ms,translate 260ms var(--motion-ease)}
  .motion-enabled .nav-number{transition:background-color 250ms,color 250ms,transform 300ms var(--motion-ease)}
  .motion-enabled .contents :is(.code-toolbar,img){transition:box-shadow 300ms,border-color 300ms,transform 350ms var(--motion-ease)}
  .motion-enabled .reading-progress span{transition:width 120ms linear}
@@ -54,14 +54,15 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
  .motion-enabled .menu-button svg{transition:transform 350ms var(--motion-ease)}
  .motion-enabled .menu-button[aria-expanded=true] svg{transform:rotate(90deg)}
  .motion-enabled .contents :is(h1,h2,h3):target{animation:pgk-anchor 1000ms ease}
- .motion-enabled :is(.tool-button,.module-study,.social-link,.module-switcher a,.toolbar button):active{transform:scale(.99)}
+ .motion-enabled :is(.tool-button,.module-study,.social-link,.module-switcher a,.toolbar button):active{transform:scale(.97)}
  .theme-changing body,.theme-changing :is(.topbar,.sidebar,.sidebar-source,article,.module-overview,.contact-footer,.tool-button,.mobile-toc,.task-state,.nav-number,.pagination a,.contents code,.contents th){transition:background-color 450ms ease,color 450ms ease,border-color 450ms ease}
  @media(hover:hover) and (pointer:fine){
+  .motion-enabled :is(.tool-button,.module-switcher a,.social-link,.pagination a,.module-study):hover{transform:translateY(-2px);box-shadow:0 6px 18px #743ce618}
   .motion-enabled .module-overview:hover{border-color:var(--accent);box-shadow:0 10px 30px #743ce612}
-  .motion-enabled .module-study:hover span{transform:translate(1px,-1px)}
-
-
-  .motion-enabled .brand:hover .brand-symbol{transform:rotate(-2deg)}
+  .motion-enabled .module-study:hover span{transform:translate(3px,-3px)}
+  .motion-enabled .sidebar nav a:hover{translate:3px 0}
+  .motion-enabled .sidebar nav a:hover .nav-number{transform:scale(1.07)}
+  .motion-enabled .brand:hover .brand-symbol{transform:rotate(-6deg) scale(1.04);box-shadow:0 6px 20px #743ce633}
   .motion-enabled .contents .code-toolbar:hover{border-color:#8f67c0;box-shadow:0 8px 24px #743ce618}
   .motion-enabled .contents img:hover{transform:scale(1.006);border-color:var(--accent);box-shadow:0 8px 28px #743ce618}
  }
@@ -80,7 +81,7 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
 @keyframes pgk-dialog{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes pgk-fade{from{opacity:0}to{opacity:1}}
 @keyframes pgk-gradient{from{background-position:0% 0%}to{background-position:100% 100%}}
-
+@keyframes pgk-sheen{to{transform:translateX(110%)}}
 @keyframes pgk-anchor{0%,100%{background:transparent}35%{background:var(--soft)}}
 @media(prefers-reduced-motion:reduce){.motion-pending{opacity:1!important;translate:none!important}.toast{translate:none}}
 @media print{.motion-pending,.motion-revealed{opacity:1!important;translate:none!important;animation:none!important}.toast{display:none!important}}
@@ -160,7 +161,7 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 .welcome-preference{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px;line-height:1.4;cursor:pointer}
 .welcome-preference input{width:15px;height:15px;margin:0;accent-color:var(--accent);flex-shrink:0}
 .welcome-start{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:10px;padding:12px 17px;color:#fff;background:linear-gradient(135deg,#7b42e9,#5830b1);font-size:13px;font-weight:650;line-height:1.4;white-space:nowrap}
-.welcome-start:hover{filter:brightness(1.015)}
+.welcome-start:hover{filter:brightness(1.08)}
 .welcome-reopen{padding:0;border:0;background:none;color:var(--accent);font:inherit;cursor:pointer;white-space:nowrap}
 .welcome-reopen:hover{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:599px){
@@ -207,8 +208,8 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 }
 @media(prefers-reduced-motion:no-preference){
  .motion-enabled .welcome-dialog[open]:not([data-closing]){animation:pgk-dialog 380ms var(--motion-ease) both}
-
- .motion-enabled .welcome-start:active{transform:scale(.99)}
+ .motion-enabled .welcome-start{transition:transform 250ms var(--motion-ease),filter 250ms}
+ .motion-enabled .welcome-start:active{transform:scale(.97)}
 }
 @media print{.welcome-dialog,.welcome-reopen{display:none!important}body.welcome-open{overflow:visible}}
 
@@ -240,7 +241,7 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 /* Contact buttons fill with the same purple gradient as the study buttons. */
 .contact-footer .social-link{position:relative;isolation:isolate;overflow:hidden}
 .contact-footer .social-link::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,#7b42e9,#5830b1);opacity:0;pointer-events:none}
-@media(prefers-reduced-motion:no-preference){.contact-footer .social-link::before{transition:opacity 650ms var(--control-ease)}}
+@media(prefers-reduced-motion:no-preference){.contact-footer .social-link::before{transition:opacity 300ms var(--motion-ease)}}
 html[data-theme] .contact-footer .social-link:focus-visible{color:#fff;border-color:#9566ee}
 .contact-footer .social-link:focus-visible::before{opacity:1}
 @media(hover:hover) and (pointer:fine){
@@ -255,94 +256,29 @@ html[data-theme] .contact-footer .social-link:focus-visible{color:#fff;border-co
 :is(.module-study,.welcome-start,.contact-footer .social-link)>.button-ripple{background:#ffffff30}
 .toolbar button.copy-success{color:#bce5c9;border-color:#bce5c94a}
 @media(prefers-reduced-motion:no-preference){
-
+ .motion-enabled .motion-magnet{translate:var(--magnet-x,0px) var(--magnet-y,0px);transition:translate 240ms var(--motion-ease),transform 250ms var(--motion-ease),background-color 250ms,color 250ms,border-color 250ms,box-shadow 250ms,filter 250ms}
  .motion-enabled .module-card{background-size:220% 220%;animation:pgk-gradient-drift 9s ease-in-out infinite alternate}
  .motion-enabled .module-overview.motion-revealed{animation-name:pgk-card-arrival;animation-duration:720ms}
- .motion-enabled :is(.module-study,.welcome-start){background-size:100% 100%}
-
+ .motion-enabled :is(.module-study,.welcome-start){background-size:180% 180%;background-position:0% 50%;transition:background-position 650ms var(--motion-ease),translate 240ms var(--motion-ease),transform 250ms var(--motion-ease),filter 250ms}
+ .motion-enabled :is(.module-study,.welcome-start):is(:hover,:focus-visible){background-position:100% 50%}
  .motion-enabled .brand:is(:hover,:focus-visible) .brand-logo rect{animation:pgk-terminal-blink 900ms ease}
- .motion-enabled :is(.header-search,.social-link) svg{transition:transform 450ms var(--control-ease)}
- .motion-enabled .header-search:is(:hover,:focus-visible) svg{transform:scale(1.035)}
- .motion-enabled .social-link[href*="t.me"]:is(:hover,:focus-visible) svg{transform:translate(1px,-1px)}
- .motion-enabled .social-link[href*="instagram"]:is(:hover,:focus-visible) svg{transform:rotate(3deg)}
- .motion-enabled .social-link[href*="vk.ru"]:is(:hover,:focus-visible) svg{transform:translateY(-1px)}
+ .motion-enabled .header-search:is(:hover,:focus-visible) svg{animation:pgk-search-nod 550ms var(--motion-ease)}
+ .motion-enabled .social-link[href*="t.me"]:is(:hover,:focus-visible) svg{animation:pgk-plane-hop 650ms var(--motion-ease)}
+ .motion-enabled .social-link[href*="instagram"]:is(:hover,:focus-visible) svg{animation:pgk-icon-turn 650ms var(--motion-ease)}
+ .motion-enabled .social-link[href*="vk.ru"]:is(:hover,:focus-visible) svg{animation:pgk-icon-bounce 550ms var(--motion-ease)}
  .motion-enabled .contents h1.motion-revealed{position:relative}
  .motion-enabled .contents h1.motion-revealed::after{content:'';position:absolute;left:0;bottom:-1px;width:44px;height:2px;border-radius:2px;background:var(--accent);transform-origin:left;animation:pgk-line-arrival 650ms var(--motion-ease) var(--reveal-delay,0ms) both;pointer-events:none}
-
-
+ .motion-enabled .contact-footer .social-link::before{clip-path:circle(0% at var(--fill-x,50%) var(--fill-y,50%));transition:clip-path 450ms var(--motion-ease),opacity 240ms}
+ .motion-enabled .contact-footer .social-link:is(:hover,:focus-visible)::before{clip-path:circle(150% at var(--fill-x,50%) var(--fill-y,50%))}
 }
 @keyframes pgk-gradient-drift{from{background-position:0% 20%}to{background-position:100% 80%}}
 @keyframes pgk-card-arrival{from{opacity:0;translate:0 20px;transform:scale(.985)}to{opacity:1;translate:0 0;transform:scale(1)}}
 @keyframes pgk-terminal-blink{0%,45%,100%{opacity:1}20%,70%{opacity:.18}}
+@keyframes pgk-search-nod{0%,100%{transform:rotate(0) scale(1)}45%{transform:rotate(-12deg) scale(1.12)}}
+@keyframes pgk-plane-hop{0%,100%{transform:translate(0,0) rotate(0)}40%{transform:translate(4px,-4px) rotate(-8deg)}70%{transform:translate(-1px,1px) rotate(3deg)}}
+@keyframes pgk-icon-turn{0%,100%{transform:rotate(0) scale(1)}45%{transform:rotate(12deg) scale(1.12)}}
+@keyframes pgk-icon-bounce{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-4px) scale(1.08)}70%{transform:translateY(1px) scale(.98)}}
 @keyframes pgk-line-arrival{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
 @media(max-width:1023px){.motion-enabled .sidebar:not(.open) .module-card{animation-play-state:paused}}
-@media(prefers-reduced-motion:reduce){.button-ripple{display:none}}
+@media(prefers-reduced-motion:reduce){.motion-magnet{translate:none}.button-ripple{display:none}}
 @media print{.button-ripple,.contents h1::after{display:none!important}}
-
-/* Subtle glass material preserves existing geometry and typography. */
-:root {
-  --glass-panel: color-mix(in srgb,var(--surface) 87%,transparent);
-  --glass-nav: color-mix(in srgb,var(--surface-soft) 91%,transparent);
-  --glass-control: color-mix(in srgb,var(--surface) 84%,transparent);
-  --glass-highlight: #ffffff91;
-  --glass-bottom: #ffffff24;
-}
-html[data-theme=dark] {
-  --glass-highlight: #ffffff12;
-  --glass-bottom: #ffffff04;
-}
-body {
-  background: radial-gradient(ellipse at 88% 12%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 48%),var(--page);
-  background-attachment: fixed;
-}
-html[data-theme] .topbar {
-  background: linear-gradient(165deg,#ffffff06,transparent 55%),var(--glass-panel);
-  backdrop-filter: blur(22px) saturate(125%); -webkit-backdrop-filter: blur(22px) saturate(125%);
-  box-shadow: inset 0 1px 0 var(--glass-highlight),inset 0 -1px 0 var(--glass-bottom);
-}
-html[data-theme] .sidebar {
-  background: var(--glass-nav);
-  backdrop-filter: blur(18px) saturate(115%); -webkit-backdrop-filter: blur(18px) saturate(115%);
-  box-shadow: inset -1px 0 0 var(--glass-bottom);
-}
-html[data-theme] .sidebar-source {background: transparent}
-html[data-theme] :is(.module-overview,.contact-footer,.pagination a,.lesson-card,.task-state) {
-  background: linear-gradient(145deg,#ffffff08,transparent 48%),var(--glass-panel);
-  backdrop-filter: blur(16px) saturate(115%); -webkit-backdrop-filter: blur(16px) saturate(115%);
-  box-shadow: inset 0 1px 0 var(--glass-highlight),inset 0 -1px 0 var(--glass-bottom),var(--shadow);
-}
-html[data-theme] article {
-  background: color-mix(in srgb,var(--surface) 97%,transparent);
-  box-shadow: inset 0 1px 0 var(--glass-highlight),var(--shadow);
-}
-html[data-theme] :is(.tool-button,.module-switcher a,.menu-button,.section-share) {
-  background: linear-gradient(165deg,#ffffff0d,transparent 60%),var(--glass-control);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 0 var(--glass-highlight),inset 0 -1px 0 var(--glass-bottom);
-}
-html[data-theme] :is(.tool-button,.module-switcher a,.menu-button,.section-share):is(:hover,:focus-visible),
-html[data-theme] .module-switcher a[aria-current] {
-  background: linear-gradient(165deg,#ffffff0d,transparent 60%),var(--soft);
-}
-html[data-theme] :is(.module-study,.welcome-start,.module-card) {
-  background-image: linear-gradient(165deg,#ffffff14,transparent 43%,#ffffff03 90%),linear-gradient(135deg,#7b42e9,#5830b1);
-  box-shadow: inset 0 1px 0 #ffffff26,inset 0 -1px 0 #ffffff08;
-}
-html[data-theme] .contact-footer .social-links .social-link {
-  background: linear-gradient(165deg,#ffffff0b,transparent 55%),color-mix(in srgb,var(--soft) 72%,transparent);
-  box-shadow: inset 0 1px 0 var(--glass-highlight),inset 0 -1px 0 var(--glass-bottom);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-}
-html[data-theme] :is(.search-dialog,.welcome-dialog,.image-dialog) {
-  background: linear-gradient(155deg,#ffffff08,transparent 50%),color-mix(in srgb,var(--surface) 94%,transparent);
-  backdrop-filter: blur(24px) saturate(120%); -webkit-backdrop-filter: blur(24px) saturate(120%);
-  box-shadow: inset 0 1px 0 var(--glass-highlight),0 20px 80px #0003;
-}
-html[data-theme] .focus-toolbar {
-  background: var(--glass-panel);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-}
-@media print {
-  html[data-theme] body {background: white}
-  html[data-theme] article {background: white; box-shadow: none}
-}
