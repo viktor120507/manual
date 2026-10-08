@@ -173,7 +173,8 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
  .welcome-dialog h2{font-size:23px;margin-bottom:10px;max-width:300px}
  .welcome-dialog p{font-size:13px;line-height:1.5}
  .welcome-credit{padding:12px 14px;margin-top:14px;border-radius:12px}
- .welcome-credit .welcome-eyebrow,.welcome-contacts>.welcome-eyebrow{display:none}
+ .welcome-credit .welcome-eyebrow{display:none}
+ .welcome-contacts>.welcome-eyebrow{margin-bottom:7px}
  .welcome-credit h3{font-size:16px;margin:0 0 7px}
  .welcome-credit .welcome-thanks{margin-top:8px;font-size:12px}
  .welcome-contacts{margin-top:14px}
