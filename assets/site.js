@@ -106,7 +106,7 @@ if(resumeSlot&&resume&&!location.hash&&resume.y>250){
  else{const destination=new URL(resume.path,siteRoot);destination.searchParams.set('resume','1');action.href=destination.href;}
  banner.append(text,action);resumeSlot.append(banner);if(pageId&&new URL(location.href).searchParams.get('resume')==='1'){action.click();const clean=new URL(location.href);clean.searchParams.delete('resume');history.replaceState(null,'',clean.href);}
 }
-for(const type of ['wheel','touchmove','keydown'])addEventListener(type,e=>{if(searchDialog?.open||imageDialog?.open||e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;if(type==='keydown'&&!['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].includes(e.key))return;canSave=true;queueSave();},{passive:true});
+for(const type of ['wheel','touchmove','keydown'])addEventListener(type,e=>{if(searchDialog?.open||imageDialog?.open||welcomeDialog.open||e.target.closest?.('input,textarea,select,[contenteditable=true]'))return;if(type==='keydown'&&!['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].includes(e.key))return;canSave=true;queueSave();},{passive:true});
 addEventListener('scroll',queueSave,{passive:true});
 document.querySelectorAll('.toc a,.mobile-toc a').forEach(a=>a.addEventListener('click',()=>{canSave=true;queueSave();}));
 addEventListener('pagehide',savePosition);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')savePosition();});
@@ -125,9 +125,55 @@ if(searchDialog){
  }catch{if(stamp===revision)status.textContent='Не удалось загрузить поиск. Проверьте соединение и повторите ввод.';}}
  function openSearch(){setMenu(false);openDialog(searchDialog);input.focus();runSearch();}
  document.querySelectorAll('.search-open').forEach(b=>b.addEventListener('click',openSearch));searchDialog.querySelector('.search-close').addEventListener('click',()=>closeDialog(searchDialog));input.addEventListener('input',()=>{revision++;clearTimeout(searchTimer);searchTimer=setTimeout(runSearch,120);});input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();results.querySelector('a')?.focus();}if(e.key==='Enter'){const first=results.querySelector('a');if(first){e.preventDefault();first.click();}}});
- document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!searchDialog.open)openSearch();}});
+ document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!welcomeDialog.open&&!searchDialog.open)openSearch();}});
  searchDialog.addEventListener('click',e=>{if(e.target===searchDialog){const r=searchDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog(searchDialog);}});
 }
+
+// Welcome appears once per tab session; readers can opt out and reopen it.
+const welcomeSessionKey='pgk-welcome-session-v1';
+const welcomeSkipKey='pgk-welcome-skip-v1';
+function shouldOpenWelcome(){
+ try{if(localStorage.getItem(welcomeSkipKey)==='1')return false;}catch{}
+ try{return sessionStorage.getItem(welcomeSessionKey)!=='1';}catch{return true;}
+}
+const welcomeDialog=document.createElement('dialog');
+welcomeDialog.className='welcome-dialog';
+welcomeDialog.setAttribute('aria-labelledby','welcome-title');
+welcomeDialog.setAttribute('aria-describedby','welcome-intro');
+welcomeDialog.innerHTML=`<button class="tool-button welcome-close" type="button" aria-label="Закрыть приветствие"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+ <div class="welcome-content">
+  <div class="welcome-brand"><span class="welcome-mark" aria-hidden="true"></span><span>ПГК · Практикум МДК</span></div>
+  <h2 id="welcome-title" tabindex="-1" autofocus>Привет! Я Виктор Калмыков.</h2>
+  <p id="welcome-intro">Я собрал этот сайт, чтобы готовиться к МДК было удобнее: с поиском по командам, понятной навигацией, личным прогрессом и аккуратным оформлением.</p>
+  <section class="welcome-credit" aria-labelledby="welcome-source-title">
+   <span class="welcome-eyebrow">Источник материалов</span>
+   <h3 id="welcome-source-title"><a href="https://xn---220-43dg5d.xn--p1ai/ru/demo-2026/modul-2/modul-2-0" target="_blank" rel="noopener noreferrer">Я у мамы сисадмин <span aria-hidden="true">↗</span></a></h3>
+   <p>Материалы мануала взяты с этого сайта. Авторство учебных материалов принадлежит его разработчику — я сделал их удобнее для чтения и подготовки.</p>
+   <p class="welcome-thanks">Спасибо разработчику «Я у мамы сисадмин» за создание мануала и работу, которая помогает нам учиться!</p>
+  </section>
+  <p class="welcome-hosting">Для надёжного доступа к материалам практикум размещён на GitHub Pages.</p>
+  <div class="welcome-contacts"><span class="welcome-eyebrow">Мои соцсети</span></div>
+ </div>
+ <div class="welcome-actions"><label class="welcome-preference"><input class="welcome-skip" type="checkbox">Не показывать при открытии</label><button class="welcome-start" type="button">Перейти к изучению <span aria-hidden="true">→</span></button></div>`;
+welcomeDialog.querySelector('.welcome-mark').innerHTML=document.querySelector('.brand-symbol')?.innerHTML||'';
+const welcomeSocials=document.querySelector('.contact-footer .social-links');
+if(welcomeSocials){const contacts=welcomeSocials.cloneNode(true);contacts.setAttribute('aria-label','Социальные сети Виктора Калмыкова');welcomeDialog.querySelector('.welcome-contacts').append(contacts);}
+document.body.append(welcomeDialog);
+const welcomeCheckbox=welcomeDialog.querySelector('.welcome-skip');
+function openWelcome(){
+ setMenu(false);
+ try{welcomeCheckbox.checked=localStorage.getItem(welcomeSkipKey)==='1';}catch{welcomeCheckbox.checked=false;}
+ document.body.classList.add('welcome-open');openDialog(welcomeDialog);
+ try{sessionStorage.setItem(welcomeSessionKey,'1');}catch{}
+}
+welcomeDialog.addEventListener('close',()=>{
+ document.body.classList.remove('welcome-open');
+ try{if(welcomeCheckbox.checked)localStorage.setItem(welcomeSkipKey,'1');else localStorage.removeItem(welcomeSkipKey);}catch{}
+});
+welcomeDialog.querySelectorAll('.welcome-close,.welcome-start').forEach(button=>button.addEventListener('click',()=>closeDialog(welcomeDialog)));
+welcomeDialog.addEventListener('click',event=>{if(event.target===welcomeDialog){const rect=welcomeDialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeDialog(welcomeDialog);}});
+const aboutRow=document.querySelector('.source-row');
+if(aboutRow){const about=document.createElement('button');about.type='button';about.className='welcome-reopen';about.textContent='О сайте';about.setAttribute('aria-label','О сайте и авторе');about.addEventListener('click',openWelcome);aboutRow.prepend(about);}
 
 // Focus reading preferences are separate from course progress and theme.
 const readerKey='pgk-reader-v1';
@@ -184,7 +230,7 @@ if(readingArticle&&headerActions){
  larger.addEventListener('click',()=>changeReader({size:readerSizes[Math.min(readerSizes.length-1,readerSizes.indexOf(readerPreferences.size)+1)]}));
  reset.addEventListener('click',()=>changeReader({size:100}));
  document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&readerPreferences.focus&&!searchDialog?.open&&!imageDialog?.open&&!event.defaultPrevented){changeReader({focus:false});focusButton.focus();}
+  if(event.key==='Escape'&&readerPreferences.focus&&!searchDialog?.open&&!imageDialog?.open&&!welcomeDialog.open&&!event.defaultPrevented){changeReader({focus:false});focusButton.focus();}
  });
  addEventListener('storage',event=>{if(event.key===readerKey){readerPreferences=readReaderPreferences();renderReader(true);}});
  renderReader();
@@ -257,7 +303,7 @@ function prepareMotion(){
   else{element.classList.add('motion-pending');revealObserver.observe(element);}
  }
 }
-for(const dialog of document.querySelectorAll('.search-dialog,.image-dialog')){
+for(const dialog of document.querySelectorAll('.search-dialog,.image-dialog,.welcome-dialog')){
  dialog.addEventListener('cancel',event=>{event.preventDefault();closeDialog(dialog);});
 }
 // Keyboard focus and anchor navigation expose only their target and ancestors;
@@ -266,3 +312,4 @@ document.addEventListener('focusin',event=>showReadingTarget(event.target));
 addEventListener('hashchange',()=>showReadingTarget(hashTarget()));
 motionPreference.addEventListener('change',prepareMotion);
 prepareMotion();
+if(shouldOpenWelcome())openWelcome();
