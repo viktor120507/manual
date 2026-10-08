@@ -144,12 +144,12 @@ welcomeDialog.innerHTML=`<button class="tool-button welcome-close" type="button"
  <div class="welcome-content">
   <div class="welcome-brand"><span class="welcome-mark" aria-hidden="true"></span><span>ПГК · Практикум МДК</span></div>
   <h2 id="welcome-title" tabindex="-1" autofocus>Привет! Я Виктор Калмыков.</h2>
-  <p id="welcome-intro">Я собрал этот сайт, чтобы готовиться к МДК было удобнее: с поиском по командам, понятной навигацией, личным прогрессом и аккуратным оформлением.</p>
+  <p id="welcome-intro"><span class="welcome-expanded">Я собрал этот сайт, чтобы готовиться к МДК было удобнее: с поиском по командам, понятной навигацией, личным прогрессом и аккуратным оформлением.</span><span class="welcome-compact">Практикум МДК с поиском, командами и личным прогрессом.</span></p>
   <section class="welcome-credit" aria-labelledby="welcome-source-title">
    <span class="welcome-eyebrow">Источник материалов</span>
    <h3 id="welcome-source-title"><a href="https://xn---220-43dg5d.xn--p1ai/ru/demo-2026/modul-2/modul-2-0" target="_blank" rel="noopener noreferrer">Я у мамы сисадмин <span aria-hidden="true">↗</span></a></h3>
-   <p>Материалы мануала взяты с этого сайта. Авторство учебных материалов принадлежит его разработчику — я сделал их удобнее для чтения и подготовки.</p>
-   <p class="welcome-thanks">Спасибо разработчику «Я у мамы сисадмин» за создание мануала и работу, которая помогает нам учиться!</p>
+   <p><span class="welcome-expanded">Материалы мануала взяты с этого сайта. Авторство учебных материалов принадлежит его разработчику — я сделал их удобнее для чтения и подготовки.</span><span class="welcome-compact">Материалы взяты с этого сайта. Я улучшил оформление и навигацию.</span></p>
+   <p class="welcome-thanks"><span class="welcome-expanded">Спасибо разработчику «Я у мамы сисадмин» за создание мануала и работу, которая помогает нам учиться!</span><span class="welcome-compact">Спасибо автору за создание мануала!</span></p>
   </section>
   <div class="welcome-contacts"><span class="welcome-eyebrow">Мои соцсети</span></div>
  </div>
