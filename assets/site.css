@@ -170,14 +170,14 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
  .welcome-brand{margin-bottom:12px;gap:9px;font-size:11px;padding-right:30px}
  .welcome-mark{width:32px;height:32px;border-radius:9px}
  .welcome-close{top:12px;right:12px}
- .welcome-dialog h2{font-size:23px;margin-bottom:10px;max-width:300px}
+ .welcome-dialog h2{font-size:23px;margin-bottom:12px;max-width:300px}
  .welcome-dialog p{font-size:13px;line-height:1.5}
- .welcome-credit{padding:12px 14px;margin-top:14px;border-radius:12px}
+ .welcome-credit{padding:12px 14px;margin-top:18px;border-radius:12px}
  .welcome-credit .welcome-eyebrow{display:none}
  .welcome-contacts>.welcome-eyebrow{margin-bottom:7px}
- .welcome-credit h3{font-size:16px;margin:0 0 7px}
- .welcome-credit .welcome-thanks{margin-top:8px;font-size:12px}
- .welcome-contacts{margin-top:14px}
+ .welcome-credit h3{font-size:16px;margin:0 0 10px}
+ .welcome-credit .welcome-thanks{margin-top:14px;font-size:12px}
+ .welcome-contacts{margin-top:18px}
  .welcome-contacts .social-links{margin-top:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
  .welcome-contacts .social-link{min-height:42px;font-size:11px;gap:5px;padding:9px 4px}
  .welcome-contacts .social-link svg{width:14px;height:14px}
@@ -185,18 +185,26 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
  .welcome-start{width:100%;min-height:42px;padding:10px 14px}
  .welcome-preference{justify-content:center;font-size:11px}
 }
-@media(max-width:599px) and (max-height:600px){
+@media(max-width:599px) and (max-height:700px){
  .welcome-dialog{max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}
  .welcome-content{padding:14px}
  .welcome-brand{margin-bottom:10px}
  .welcome-mark{width:28px;height:28px;border-radius:8px}
- .welcome-dialog h2{font-size:21px;margin-bottom:8px}
+ .welcome-dialog h2{font-size:21px;margin-bottom:10px}
  .welcome-dialog p{font-size:12px;line-height:1.45}
- .welcome-credit{margin-top:12px;padding:10px 12px}
- .welcome-credit h3{font-size:15px;margin-bottom:6px}
- .welcome-credit .welcome-thanks{font-size:12px;margin-top:7px}
- .welcome-contacts{margin-top:12px}
+ .welcome-credit{margin-top:14px;padding:10px 12px}
+ .welcome-credit h3{font-size:15px;margin-bottom:8px}
+ .welcome-credit .welcome-thanks{font-size:12px;margin-top:12px}
+ .welcome-contacts{margin-top:14px}
  .welcome-actions{padding:10px 14px;gap:8px}
+}
+@media(max-width:359px) and (max-height:700px){
+ .welcome-content{padding:12px;scrollbar-width:none}
+ .welcome-mark{width:24px;height:24px;border-radius:7px}
+ .welcome-dialog h2{font-size:20px}
+ .welcome-dialog p{line-height:1.4}
+ .welcome-credit{padding:8px 10px}
+ .welcome-actions{padding:8px 12px}
 }
 @media(prefers-reduced-motion:no-preference){
  .motion-enabled .welcome-dialog[open]:not([data-closing]){animation:pgk-dialog 380ms var(--motion-ease) both}
