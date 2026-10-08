@@ -138,7 +138,6 @@ body.welcome-open{overflow:hidden}
 .welcome-dialog{color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:0;width:600px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 40px);overflow:hidden;box-shadow:0 30px 120px #0005}
 .welcome-dialog[open]{display:flex;flex-direction:column}
 .welcome-dialog::backdrop{background:#120d20ad;backdrop-filter:blur(8px)}
-.welcome-compact{display:none}
 .welcome-content{overflow:auto;min-height:0;padding:30px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .welcome-brand{display:flex;align-items:center;gap:12px;margin-bottom:23px;padding-right:30px;color:var(--muted);font-size:13px;font-weight:650;line-height:1.4}
 .welcome-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:var(--accent);color:#fff;flex-shrink:0}
@@ -168,8 +167,6 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 @media(max-width:599px){
  .welcome-dialog{border-radius:19px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
  .welcome-content{padding:18px 16px}
- .welcome-expanded{display:none}
- .welcome-compact{display:inline}
  .welcome-brand{margin-bottom:12px;gap:9px;font-size:11px;padding-right:30px}
  .welcome-mark{width:32px;height:32px;border-radius:9px}
  .welcome-close{top:12px;right:12px}
