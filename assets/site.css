@@ -38,9 +38,9 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
  .motion-enabled .module-card{background-size:160% 160%;animation:pgk-gradient 1400ms var(--motion-ease) both}
  .motion-enabled :is(.tool-button,.module-switcher a,.menu-button,.social-link,.pagination a,.module-study,.welcome-start,.section-share,.toolbar button,.search-result,.search-close,.image-close,.welcome-close){transition:transform 400ms var(--control-ease),background-color 700ms var(--control-ease),border-color 600ms var(--control-ease),color 600ms var(--control-ease),box-shadow 650ms var(--control-ease),filter 700ms var(--control-ease),background-position 1100ms var(--control-ease)}
  .motion-enabled .module-study{position:relative;overflow:hidden;isolation:isolate}
- .motion-enabled .module-study::before{content:'';position:absolute;inset:-50% -25%;background:linear-gradient(110deg,transparent 35%,#ffffff14 49%,transparent 63%);transform:translateX(-30%);opacity:0;transition:transform 1200ms var(--control-ease),opacity 700ms var(--control-ease);pointer-events:none;z-index:-1}
- .motion-enabled .module-study:is(:hover,:focus-visible)::before{transform:translateX(30%);opacity:1}
- .motion-enabled .module-study span{transition:transform 650ms var(--control-ease)}
+ .motion-enabled :is(.module-study,.welcome-start)::before{content:'';position:absolute;inset:-50% -25%;background:linear-gradient(110deg,transparent 35%,#ffffff14 49%,transparent 63%);transform:translateX(-30%);opacity:0;transition:transform 1200ms var(--control-ease),opacity 700ms var(--control-ease);pointer-events:none;z-index:-1}
+ .motion-enabled :is(.module-study,.welcome-start):is(:hover,:focus-visible)::before{transform:translateX(30%);opacity:1}
+ .motion-enabled :is(.module-study,.welcome-start) span{transition:transform 650ms var(--control-ease)}
  .motion-enabled .module-overview{transition:border-color 300ms,box-shadow 300ms}
  .motion-enabled .sidebar nav a{transition:background-color 600ms var(--control-ease),color 600ms var(--control-ease),translate 450ms var(--control-ease)}
  .motion-enabled .nav-number{transition:background-color 600ms var(--control-ease),color 600ms var(--control-ease),transform 450ms var(--control-ease)}
@@ -57,9 +57,10 @@ html[data-theme=dark]{color-scheme:dark;--accent:#b996ff;--accent-hover:#d0baff;
  .motion-enabled :is(.tool-button,.module-study,.welcome-start,.menu-button,.social-link,.module-switcher a,.toolbar button):active{transform:scale(.985);transition:transform 180ms var(--control-ease),background-color 700ms var(--control-ease),border-color 600ms var(--control-ease),color 600ms var(--control-ease),box-shadow 650ms var(--control-ease),filter 700ms var(--control-ease),background-position 1100ms var(--control-ease)}
  .theme-changing body,.theme-changing :is(.topbar,.sidebar,.sidebar-source,article,.module-overview,.contact-footer,.tool-button,.mobile-toc,.task-state,.nav-number,.pagination a,.contents code,.contents th){transition:background-color 450ms ease,color 450ms ease,border-color 450ms ease}
  @media(hover:hover) and (pointer:fine){
-  .motion-enabled :is(.tool-button,.module-switcher a,.social-link,.pagination a,.module-study):hover{transform:translateY(-1px);box-shadow:0 6px 18px #743ce618}
+  .motion-enabled :is(.tool-button,.module-switcher a,.social-link,.pagination a,.module-study,.welcome-start):hover{transform:translateY(-1px);box-shadow:0 6px 18px #743ce618}
   .motion-enabled .module-overview:hover{border-color:var(--accent);box-shadow:0 10px 30px #743ce612}
   .motion-enabled .module-study:hover span{transform:translate(2px,-2px)}
+  .motion-enabled .welcome-start:hover span{transform:translateX(2px)}
   .motion-enabled :is(.tool-button,.module-study,.welcome-start,.menu-button,.social-link,.module-switcher a,.toolbar button):active{transform:scale(.985)}
   .motion-enabled .sidebar nav a:hover{translate:3px 0}
   .motion-enabled .sidebar nav a:hover .nav-number{transform:scale(1.07)}
@@ -208,8 +209,6 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 }
 @media(prefers-reduced-motion:no-preference){
  .motion-enabled .welcome-dialog[open]:not([data-closing]){animation:pgk-dialog 380ms var(--motion-ease) both}
- .motion-enabled .welcome-start{transition:transform 250ms var(--motion-ease),filter 250ms}
- .motion-enabled .welcome-start:active{transform:scale(.97)}
 }
 @media print{.welcome-dialog,.welcome-reopen{display:none!important}body.welcome-open{overflow:visible}}
 
@@ -239,21 +238,21 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
 @media print{.site-cursor,.cursor-toggle{display:none!important}}
 
 /* Contact buttons fill with the same purple gradient as the study buttons. */
-.contact-footer .social-link{position:relative;isolation:isolate;overflow:hidden}
-.contact-footer .social-link::before{content:'';position:absolute;inset:-8px;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,#7b42e9,#5830b1);filter:blur(10px);opacity:0;pointer-events:none}
-@media(prefers-reduced-motion:no-preference){.contact-footer .social-link::before{transition:opacity 600ms var(--control-ease)}}
-html[data-theme] .contact-footer .social-link:focus-visible{color:#fff;border-color:#9566ee}
-.contact-footer .social-link:focus-visible::before{opacity:1}
+:is(.contact-footer,.welcome-contacts) .social-link{position:relative;isolation:isolate;overflow:hidden}
+:is(.contact-footer,.welcome-contacts) .social-link::before{content:'';position:absolute;inset:-8px;z-index:-1;border-radius:inherit;background:linear-gradient(135deg,#7b42e9,#5830b1);filter:blur(10px);opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:no-preference){:is(.contact-footer,.welcome-contacts) .social-link::before{transition:opacity 600ms var(--control-ease)}}
+html[data-theme] :is(.contact-footer,.welcome-contacts) .social-link:focus-visible{color:#fff;border-color:#9566ee}
+:is(.contact-footer,.welcome-contacts) .social-link:focus-visible::before{opacity:1}
 @media(hover:hover) and (pointer:fine){
- html[data-theme] .contact-footer .social-link:hover{color:#fff;border-color:#9566ee}
- .contact-footer .social-link:hover::before{opacity:1}
+ html[data-theme] :is(.contact-footer,.welcome-contacts) .social-link:hover{color:#fff;border-color:#9566ee}
+ :is(.contact-footer,.welcome-contacts) .social-link:hover::before{opacity:1}
 }
-@media(forced-colors:active){.contact-footer .social-link::before{display:none}html[data-theme] .contact-footer .social-link:is(:hover,:focus-visible){color:LinkText;border-color:Highlight}}
+@media(forced-colors:active){:is(.contact-footer,.welcome-contacts) .social-link::before{display:none}html[data-theme] :is(.contact-footer,.welcome-contacts) .social-link:is(:hover,:focus-visible){color:LinkText;border-color:Highlight}}
 
 /* Extra interaction motion: small distances, one-shot icon gestures, no glow. */
 :where(.motion-surface){position:relative;isolation:isolate;overflow:hidden}
 .button-ripple{position:absolute;z-index:-1;display:block;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,transparent);pointer-events:none}
-:is(.module-study,.welcome-start,.contact-footer .social-link)>.button-ripple{background:#ffffff30}
+:is(.module-study,.welcome-start,:is(.contact-footer,.welcome-contacts) .social-link)>.button-ripple{background:#ffffff30}
 .toolbar button.copy-success{color:#bce5c9;border-color:#bce5c94a}
 @media(prefers-reduced-motion:no-preference){
  .motion-enabled .module-card{background-size:220% 220%;animation:pgk-gradient-drift 9s ease-in-out infinite alternate}
