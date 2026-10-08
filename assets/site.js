@@ -313,7 +313,7 @@ motionPreference.addEventListener('change',prepareMotion);
 prepareMotion();
 if(shouldOpenWelcome())openWelcome();
 
-// A mouse-only ring follows the pointer without delaying text selection or touch.
+// The browser draws the pointer itself; only the decorative ring uses animation frames.
 function setupRingCursor(){
  const root=document.documentElement;
  const mouse=matchMedia('(hover: hover) and (pointer: fine)');
@@ -321,7 +321,7 @@ function setupRingCursor(){
  const preferenceKey='pgk-cursor-ring';
  const cursor=document.createElement('div');cursor.className='site-cursor';
  cursor.setAttribute('aria-hidden','true');cursor.setAttribute('popover','manual');
- cursor.innerHTML='<span class="site-cursor-ring"></span><span class="site-cursor-dot"></span>';
+ cursor.innerHTML='<span class="site-cursor-ring"></span>';
  document.body.append(cursor);
  const supported=typeof cursor.showPopover==='function';
  let preferred=true;
@@ -361,7 +361,7 @@ function setupRingCursor(){
   cursor.classList.add('is-visible');root.classList.add('site-cursor-active');
  }
  function schedule(){if(!frame)frame=requestAnimationFrame(paint);}
- function refresh(){enabled=supported&&preferred&&mouse.matches&&!contrast.matches;renderPreference();if(!enabled){hasPosition=false;hide();}else if(hasPosition)schedule();}
+ function refresh(){enabled=supported&&preferred&&mouse.matches&&!contrast.matches;root.classList.toggle('site-cursor-enabled',enabled);renderPreference();if(!enabled){hasPosition=false;hide();}else if(hasPosition)schedule();}
  toggle.addEventListener('click',()=>{preferred=!preferred;try{localStorage.setItem(preferenceKey,preferred?'1':'0');}catch{}refresh();});
  document.querySelector('.source-row')?.append(toggle);
  document.addEventListener('pointermove',event=>{
