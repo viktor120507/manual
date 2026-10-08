@@ -46,7 +46,24 @@ let toastTimer;
 function announce(message){const toast=document.querySelector('.toast');toast.textContent=message;toast.classList.add('visible');animateElement(toast,[{opacity:0,translate:'0 8px'},{opacity:1,translate:'0 0'}],{duration:260});clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('visible'),2200);}
 async function copy(text){if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return;}const area=document.createElement('textarea');area.value=text;area.style.position='fixed';area.style.left='-9999px';document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();if(!ok)throw new Error('copy failed');}
 const copyIcon='<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="6" y="6" width="9" height="9" rx="2"/><path d="M11 3H5a2 2 0 0 0-2 2v6"/></svg>';
-document.querySelectorAll('.code-toolbar').forEach(box=>{const button=box.querySelector('.toolbar button');const code=box.querySelector('pre code');const toolbar=box.querySelector('.toolbar');if(!button||!code||!toolbar)return;const label=document.createElement('span');label.className='code-label';label.textContent='>_  Код';toolbar.prepend(label);button.innerHTML=copyIcon+'<span>Копировать</span>';button.type='button';button.setAttribute('aria-label','Копировать команду');button.addEventListener('click',async()=>{try{await copy(code.textContent);button.querySelector('span').textContent='Скопировано';announce('Команда скопирована');setTimeout(()=>button.querySelector('span').textContent='Копировать',1800);}catch{announce('Не удалось скопировать. Выделите команду вручную.');}});});
+document.querySelectorAll('.code-toolbar').forEach(box=>{
+ const button=box.querySelector('.toolbar button'),code=box.querySelector('pre code'),toolbar=box.querySelector('.toolbar');
+ if(!button||!code||!toolbar)return;
+ const label=document.createElement('span');label.className='code-label';label.textContent='>_  Код';toolbar.prepend(label);
+ button.innerHTML=copyIcon+'<span>Копировать</span>';button.type='button';button.setAttribute('aria-label','Копировать команду');
+ const icon=button.querySelector('svg'),originalIcon=icon.innerHTML;
+ let resetTimer;
+ button.addEventListener('click',async()=>{
+  try{
+   await copy(code.textContent);clearTimeout(resetTimer);
+   button.querySelector('span').textContent='Скопировано';button.classList.add('copy-success');
+   icon.innerHTML='<path d="m3.5 9 3.5 3.5 7.5-7.5"/>';
+   animateElement(icon,[{transform:'scale(.55) rotate(-18deg)',opacity:.3},{transform:'scale(1.15) rotate(3deg)',opacity:1},{transform:'scale(1) rotate(0)',opacity:1}],{duration:420});
+   announce('Команда скопирована');
+   resetTimer=setTimeout(()=>{button.querySelector('span').textContent='Копировать';button.classList.remove('copy-success');icon.innerHTML=originalIcon;},1800);
+  }catch{announce('Не удалось скопировать. Выделите команду вручную.');}
+ });
+});
 const tocLinks=[...document.querySelectorAll('.toc nav a')];
 const headings=[...document.querySelectorAll('.contents h1[id],.contents h2[id],.contents h3[id]')];
 let scheduled=false;
@@ -383,3 +400,59 @@ function setupRingCursor(){
  refresh();
 }
 setupRingCursor();
+
+
+// Interaction motion decorates controls without delaying clicks or navigation.
+function setupInteractionMotion(){
+ const finePointer=matchMedia('(hover:hover) and (pointer:fine)');
+ const actions='button:not(.menu-backdrop),.module-study,.social-link,.module-switcher a,.pagination a,.start-links a,.search-result,.sidebar nav a';
+ document.querySelectorAll(actions).forEach(element=>element.classList.add('motion-surface'));
+ document.addEventListener('click',event=>{
+  if(motionPreference.matches||!(event.target instanceof Element))return;
+  const control=event.target.closest(actions);
+  if(!control||control.matches(':disabled,[aria-disabled=true],[disabled]'))return;
+  control.classList.add('motion-surface');
+  // Limit transient layers when someone clicks repeatedly.
+  control.querySelectorAll(':scope > .button-ripple').forEach(element=>element.remove());
+  const rect=control.getBoundingClientRect(),ripple=document.createElement('span');
+  const diameter=Math.hypot(rect.width,rect.height)*2;
+  const x=event.detail?Math.max(0,Math.min(rect.width,event.clientX-rect.left)):rect.width/2;
+  const y=event.detail?Math.max(0,Math.min(rect.height,event.clientY-rect.top)):rect.height/2;
+  ripple.className='button-ripple';ripple.setAttribute('aria-hidden','true');
+  Object.assign(ripple.style,{left:x+'px',top:y+'px',width:diameter+'px',height:diameter+'px'});
+  control.append(ripple);
+  const animation=animateElement(ripple,[{transform:'translate(-50%,-50%) scale(.02)',opacity:.7},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:620});
+  if(animation)animation.finished.catch(()=>{}).then(()=>ripple.remove());else ripple.remove();
+ });
+ const magnets=[...document.querySelectorAll('.module-study,.welcome-start,.contact-footer .social-link')];
+ let frame=0,current=null,x=0,y=0;
+ function reset(element){element?.style.removeProperty('--magnet-x');element?.style.removeProperty('--magnet-y');}
+ function stop(){if(frame)cancelAnimationFrame(frame);frame=0;reset(current);current=null;}
+ function paint(){
+  frame=0;
+  if(!current||motionPreference.matches||!finePointer.matches){stop();return;}
+  const rect=current.getBoundingClientRect();
+  current.style.setProperty('--magnet-x',Math.max(-3,Math.min(3,(x-rect.left-rect.width/2)*.035))+'px');
+  current.style.setProperty('--magnet-y',Math.max(-2,Math.min(2,(y-rect.top-rect.height/2)*.06))+'px');
+ }
+ for(const element of magnets){
+  element.classList.add('motion-magnet');
+  element.addEventListener('pointerenter',event=>{
+   if(event.pointerType!=='mouse'||motionPreference.matches||!finePointer.matches)return;
+   const rect=element.getBoundingClientRect();
+   element.style.setProperty('--fill-x',Math.max(0,Math.min(100,(event.clientX-rect.left)/rect.width*100))+'%');
+   element.style.setProperty('--fill-y',Math.max(0,Math.min(100,(event.clientY-rect.top)/rect.height*100))+'%');
+  },{passive:true});
+  element.addEventListener('pointermove',event=>{
+   if(event.pointerType!=='mouse'||motionPreference.matches||!finePointer.matches)return;
+   if(current!==element){reset(current);current=element;}
+   x=event.clientX;y=event.clientY;if(!frame)frame=requestAnimationFrame(paint);
+  },{passive:true});
+  element.addEventListener('pointerleave',()=>{if(current===element)stop();},{passive:true});
+  element.addEventListener('pointercancel',stop,{passive:true});
+ }
+ finePointer.addEventListener('change',stop);motionPreference.addEventListener('change',()=>{stop();document.querySelectorAll('.button-ripple').forEach(element=>element.remove());});
+ addEventListener('blur',stop);addEventListener('scroll',stop,{passive:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+}
+setupInteractionMotion();

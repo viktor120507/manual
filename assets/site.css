@@ -249,3 +249,36 @@ html[data-theme] .contact-footer .social-link:focus-visible{color:#fff;border-co
  .contact-footer .social-link:hover::before{opacity:1}
 }
 @media(forced-colors:active){.contact-footer .social-link::before{display:none}html[data-theme] .contact-footer .social-link:is(:hover,:focus-visible){color:LinkText;border-color:Highlight}}
+
+/* Extra interaction motion: small distances, one-shot icon gestures, no glow. */
+:where(.motion-surface){position:relative;isolation:isolate;overflow:hidden}
+.button-ripple{position:absolute;z-index:-1;display:block;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,transparent);pointer-events:none}
+:is(.module-study,.welcome-start,.contact-footer .social-link)>.button-ripple{background:#ffffff30}
+.toolbar button.copy-success{color:#bce5c9;border-color:#bce5c94a}
+@media(prefers-reduced-motion:no-preference){
+ .motion-enabled .motion-magnet{translate:var(--magnet-x,0px) var(--magnet-y,0px);transition:translate 240ms var(--motion-ease),transform 250ms var(--motion-ease),background-color 250ms,color 250ms,border-color 250ms,box-shadow 250ms,filter 250ms}
+ .motion-enabled .module-card{background-size:220% 220%;animation:pgk-gradient-drift 9s ease-in-out infinite alternate}
+ .motion-enabled .module-overview.motion-revealed{animation-name:pgk-card-arrival;animation-duration:720ms}
+ .motion-enabled :is(.module-study,.welcome-start){background-size:180% 180%;background-position:0% 50%;transition:background-position 650ms var(--motion-ease),translate 240ms var(--motion-ease),transform 250ms var(--motion-ease),filter 250ms}
+ .motion-enabled :is(.module-study,.welcome-start):is(:hover,:focus-visible){background-position:100% 50%}
+ .motion-enabled .brand:is(:hover,:focus-visible) .brand-logo rect{animation:pgk-terminal-blink 900ms ease}
+ .motion-enabled .header-search:is(:hover,:focus-visible) svg{animation:pgk-search-nod 550ms var(--motion-ease)}
+ .motion-enabled .social-link[href*="t.me"]:is(:hover,:focus-visible) svg{animation:pgk-plane-hop 650ms var(--motion-ease)}
+ .motion-enabled .social-link[href*="instagram"]:is(:hover,:focus-visible) svg{animation:pgk-icon-turn 650ms var(--motion-ease)}
+ .motion-enabled .social-link[href*="vk.ru"]:is(:hover,:focus-visible) svg{animation:pgk-icon-bounce 550ms var(--motion-ease)}
+ .motion-enabled .contents h1.motion-revealed{position:relative}
+ .motion-enabled .contents h1.motion-revealed::after{content:'';position:absolute;left:0;bottom:-1px;width:44px;height:2px;border-radius:2px;background:var(--accent);transform-origin:left;animation:pgk-line-arrival 650ms var(--motion-ease) var(--reveal-delay,0ms) both;pointer-events:none}
+ .motion-enabled .contact-footer .social-link::before{clip-path:circle(0% at var(--fill-x,50%) var(--fill-y,50%));transition:clip-path 450ms var(--motion-ease),opacity 240ms}
+ .motion-enabled .contact-footer .social-link:is(:hover,:focus-visible)::before{clip-path:circle(150% at var(--fill-x,50%) var(--fill-y,50%))}
+}
+@keyframes pgk-gradient-drift{from{background-position:0% 20%}to{background-position:100% 80%}}
+@keyframes pgk-card-arrival{from{opacity:0;translate:0 20px;transform:scale(.985)}to{opacity:1;translate:0 0;transform:scale(1)}}
+@keyframes pgk-terminal-blink{0%,45%,100%{opacity:1}20%,70%{opacity:.18}}
+@keyframes pgk-search-nod{0%,100%{transform:rotate(0) scale(1)}45%{transform:rotate(-12deg) scale(1.12)}}
+@keyframes pgk-plane-hop{0%,100%{transform:translate(0,0) rotate(0)}40%{transform:translate(4px,-4px) rotate(-8deg)}70%{transform:translate(-1px,1px) rotate(3deg)}}
+@keyframes pgk-icon-turn{0%,100%{transform:rotate(0) scale(1)}45%{transform:rotate(12deg) scale(1.12)}}
+@keyframes pgk-icon-bounce{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-4px) scale(1.08)}70%{transform:translateY(1px) scale(.98)}}
+@keyframes pgk-line-arrival{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@media(max-width:1023px){.motion-enabled .sidebar:not(.open) .module-card{animation-play-state:paused}}
+@media(prefers-reduced-motion:reduce){.motion-magnet{translate:none}.button-ripple{display:none}}
+@media print{.button-ripple,.contents h1::after{display:none!important}}
