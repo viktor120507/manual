@@ -212,3 +212,19 @@ html[data-theme=dark] .welcome-mark{color:#21132f}
  .motion-enabled .welcome-start:active{transform:scale(.97)}
 }
 @media print{.welcome-dialog,.welcome-reopen{display:none!important}body.welcome-open{overflow:visible}}
+
+/* The ring stays above dialogs; only its size animates, never its position. */
+.site-cursor{position:fixed;inset:0 auto auto 0;width:40px;height:40px;margin:0;padding:0;border:0;background:transparent;color:var(--accent);overflow:visible;pointer-events:none;opacity:0;z-index:1000;contain:layout style}
+.site-cursor::backdrop{background:transparent;pointer-events:none}
+.site-cursor.is-visible{opacity:1}
+.site-cursor-ring,.site-cursor-dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none}
+.site-cursor-ring{width:25px;height:25px;border:1.5px solid currentColor;box-shadow:0 0 0 1px color-mix(in srgb,var(--surface) 45%,transparent);transition:width 180ms var(--motion-ease),height 180ms var(--motion-ease)}
+.site-cursor-dot{width:6px;height:6px;background:currentColor;box-shadow:0 0 0 1px color-mix(in srgb,var(--surface) 45%,transparent)}
+.site-cursor.is-hover .site-cursor-ring{width:37px;height:37px}
+.site-cursor.is-pressed .site-cursor-ring{width:19px;height:19px}
+.cursor-toggle{padding:0;border:0;background:none;color:var(--accent);font:inherit;white-space:nowrap}
+.cursor-toggle:hover{text-decoration:underline;text-underline-offset:3px}
+@media (hover:hover) and (pointer:fine){html.site-cursor-active,html.site-cursor-active *{cursor:none!important}}
+@media (prefers-reduced-motion:reduce){.site-cursor-ring{transition:none}}
+@media (hover:none),(pointer:coarse),(forced-colors:active){.site-cursor,.cursor-toggle{display:none!important}html.site-cursor-active,html.site-cursor-active *{cursor:revert!important}}
+@media print{.site-cursor,.cursor-toggle{display:none!important}}

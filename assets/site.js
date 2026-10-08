@@ -312,3 +312,75 @@ addEventListener('hashchange',()=>showReadingTarget(hashTarget()));
 motionPreference.addEventListener('change',prepareMotion);
 prepareMotion();
 if(shouldOpenWelcome())openWelcome();
+
+// A mouse-only ring follows the pointer without delaying text selection or touch.
+function setupRingCursor(){
+ const root=document.documentElement;
+ const mouse=matchMedia('(hover: hover) and (pointer: fine)');
+ const contrast=matchMedia('(forced-colors: active)');
+ const preferenceKey='pgk-cursor-ring';
+ const cursor=document.createElement('div');cursor.className='site-cursor';
+ cursor.setAttribute('aria-hidden','true');cursor.setAttribute('popover','manual');
+ cursor.innerHTML='<span class="site-cursor-ring"></span><span class="site-cursor-dot"></span>';
+ document.body.append(cursor);
+ const supported=typeof cursor.showPopover==='function';
+ let preferred=true;
+ try{preferred=localStorage.getItem(preferenceKey)!=='0';}catch{}
+ let enabled=false,frame=0,x=0,y=0,hasPosition=false,layer=null,pressed=false;
+ const interactive='a[href],button,summary,label,input[type=checkbox],input[type=radio],input[type=range],[role=button],[role=link]';
+ const native='input,textarea,select,[contenteditable]:not([contenteditable=false]),iframe,video,audio';
+ const text='p,h1,h2,h3,h4,h5,h6,li,dt,dd,pre,code,td,th,figcaption,blockquote,.motion-inline,.page-eyebrow,.welcome-eyebrow';
+ const toggle=document.createElement('button');toggle.type='button';toggle.className='cursor-toggle';
+ function renderPreference(){
+  toggle.textContent=preferred?'Курсор: кольцо':'Курсор: обычный';
+  toggle.setAttribute('aria-pressed',String(preferred));
+  toggle.setAttribute('aria-label',preferred?'Включить обычный курсор':'Включить курсор с кольцом');
+  toggle.hidden=!supported||!mouse.matches||contrast.matches;
+ }
+ function hide(){
+  root.classList.remove('site-cursor-active');cursor.classList.remove('is-visible','is-hover','is-pressed');
+  if(supported&&cursor.matches(':popover-open'))cursor.hidePopover();
+  layer=null;pressed=false;
+ }
+ function paint(){
+  frame=0;
+  if(!enabled||!hasPosition){hide();return;}
+  const target=document.elementFromPoint(x,y);
+  if(!target){hide();return;}
+  const action=target.closest(interactive);
+  if(target.closest(native)&&!target.closest('input[type=checkbox],input[type=radio],input[type=range]')||action?.matches(':disabled,[aria-disabled=true]')||!action&&target.closest(text)){hide();return;}
+  const modal=document.querySelector('dialog:modal');
+  // Re-enter the top layer after a dialog opens, so its controls keep the cursor.
+  try{
+   if(layer!==modal&&cursor.matches(':popover-open'))cursor.hidePopover();
+   if(!cursor.matches(':popover-open'))cursor.showPopover();
+  }catch{hide();return;}
+  layer=modal;
+  cursor.style.transform='translate3d('+(x-20)+'px,'+(y-20)+'px,0)';
+  cursor.classList.toggle('is-hover',!!action);cursor.classList.toggle('is-pressed',pressed);
+  cursor.classList.add('is-visible');root.classList.add('site-cursor-active');
+ }
+ function schedule(){if(!frame)frame=requestAnimationFrame(paint);}
+ function refresh(){enabled=supported&&preferred&&mouse.matches&&!contrast.matches;renderPreference();if(!enabled){hasPosition=false;hide();}else if(hasPosition)schedule();}
+ toggle.addEventListener('click',()=>{preferred=!preferred;try{localStorage.setItem(preferenceKey,preferred?'1':'0');}catch{}refresh();});
+ document.querySelector('.source-row')?.append(toggle);
+ document.addEventListener('pointermove',event=>{
+  if(event.pointerType!=='mouse'){hasPosition=false;hide();return;}
+  if(!enabled)return;
+  x=event.clientX;y=event.clientY;hasPosition=true;schedule();
+ },{passive:true});
+ document.addEventListener('pointerdown',event=>{if(event.pointerType!=='mouse'){hasPosition=false;hide();return;}pressed=true;schedule();},{passive:true});
+ document.addEventListener('pointerup',()=>{pressed=false;schedule();},{passive:true});
+ document.addEventListener('pointercancel',()=>{hasPosition=false;hide();},{passive:true});
+ document.addEventListener('pointerout',event=>{if(!event.relatedTarget){hasPosition=false;hide();}},{passive:true});
+ document.addEventListener('keydown',()=>{hasPosition=false;hide();});
+ addEventListener('blur',()=>{hasPosition=false;hide();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){hasPosition=false;hide();}});
+ addEventListener('scroll',()=>{if(hasPosition)schedule();},{passive:true,capture:true});
+ addEventListener('resize',()=>{if(hasPosition)schedule();});
+ for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('toggle',()=>{if(hasPosition)schedule();});
+ mouse.addEventListener('change',refresh);contrast.addEventListener('change',refresh);
+ addEventListener('storage',event=>{if(event.key===preferenceKey){preferred=event.newValue!=='0';refresh();}});
+ refresh();
+}
+setupRingCursor();
