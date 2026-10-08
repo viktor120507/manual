@@ -329,7 +329,6 @@ function setupRingCursor(){
  let enabled=false,frame=0,x=0,y=0,hasPosition=false,layer=null,pressed=false;
  const interactive='a[href],button,summary,label,input[type=checkbox],input[type=radio],input[type=range],[role=button],[role=link]';
  const native='input,textarea,select,[contenteditable]:not([contenteditable=false]),iframe,video,audio';
- const text='p,h1,h2,h3,h4,h5,h6,li,dt,dd,pre,code,td,th,figcaption,blockquote,.motion-inline,.page-eyebrow,.welcome-eyebrow';
  const toggle=document.createElement('button');toggle.type='button';toggle.className='cursor-toggle';
  function renderPreference(){
   toggle.textContent=preferred?'Курсор: кольцо':'Курсор: обычный';
@@ -348,7 +347,7 @@ function setupRingCursor(){
   const target=document.elementFromPoint(x,y);
   if(!target){hide();return;}
   const action=target.closest(interactive);
-  if(target.closest(native)&&!target.closest('input[type=checkbox],input[type=radio],input[type=range]')||action?.matches(':disabled,[aria-disabled=true]')||!action&&target.closest(text)){hide();return;}
+  if(target.closest(native)&&!target.closest('input[type=checkbox],input[type=radio],input[type=range]')||action?.matches(':disabled,[aria-disabled=true]')){hide();return;}
   const modal=document.querySelector('dialog:modal');
   // Re-enter the top layer after a dialog opens, so its controls keep the cursor.
   try{
