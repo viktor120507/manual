@@ -6,7 +6,7 @@
  const endpoint=script?.dataset.chatEndpoint || config.endpoint || (local?`http://${location.hostname}:${config.localPort || 8780}/api/chat`:'');
  const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 8H5l-3 2v-10a9 9 0 0 1 18 0Z"/><path d="M7 10h8M7 14h5"/></svg>';
  const root=document.createElement('div');root.className='community-chat';
- root.innerHTML=`<button class="chat-launcher motion-surface" type="button" aria-expanded="false" aria-controls="community-chat-panel" aria-label="Открыть чат сайта">${icon}<span>Чат</span><span class="chat-unread" hidden>0</span><span class="chat-launcher-dot" aria-hidden="true"></span></button>
+ root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><button class="chat-launcher motion-surface" type="button" aria-expanded="false" aria-controls="community-chat-panel" aria-label="Открыть чат сайта">${icon}<span>Чат</span><span class="chat-unread" hidden>0</span><span class="chat-launcher-dot" aria-hidden="true"></span></button>
  <section class="chat-panel" id="community-chat-panel" role="dialog" aria-labelledby="community-chat-title" hidden>
  <div class="chat-head"><div class="chat-heading-icon">${icon}</div><div><h2 id="community-chat-title">Чат практикума</h2><p class="chat-connection">Подключаемся…</p></div><button class="chat-close tool-button motion-surface" type="button" aria-label="Закрыть чат"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
  <div class="chat-info"><span class="chat-online-label"><span aria-hidden="true"></span><b class="chat-online-count">0 онлайн</b></span><span class="chat-expiry" title="История автоматически очищается каждые два часа">Очистка через 2:00:00</span></div>
@@ -41,10 +41,10 @@
  function badge(){const chip=$('.chat-unread');chip.textContent=unread>99?'99+':String(unread);chip.hidden=!unread;launcher.setAttribute('aria-label',unread?`Открыть чат сайта, новых сообщений: ${unread}`:'Открыть чат сайта');}
  function jump(){history.scrollTop=history.scrollHeight;$('.chat-jump').hidden=true;unread=0;badge();}
  function setOpen(open){
-  panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));launcher.hidden=open;
+  panel.hidden=!open;root.classList.toggle('chat-open',open);launcher.setAttribute('aria-expanded',String(open));launcher.hidden=open;
   if(open){clock();jump();(connected?(namePending()?nameField:field):$('.chat-close')).focus();}else launcher.focus();
  }
- launcher.addEventListener('click',()=>setOpen(true));$('.chat-close').addEventListener('click',()=>setOpen(false));$('.chat-jump').addEventListener('click',jump);
+ launcher.addEventListener('click',()=>setOpen(true));$('.chat-close').addEventListener('click',()=>setOpen(false));$('.chat-backdrop').addEventListener('click',()=>setOpen(false));$('.chat-jump').addEventListener('click',jump);
  panel.addEventListener('keydown',event=>{
   if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setOpen(false);}
   if(event.key==='Tab'){
