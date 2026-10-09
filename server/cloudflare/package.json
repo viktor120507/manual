@@ -1,0 +1,15 @@
+{
+  "name": "pgk-praktikum-chat",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --ip 127.0.0.1 --port 8781 --local",
+    "test": "node --test worker.test.mjs",
+    "test:runtime": "node --test runtime.test.mjs",
+    "test:load": "node load-test.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.148.0"
+  }
+}

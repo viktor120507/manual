@@ -1,0 +1,16 @@
+{
+  "name": "pgk-praktikum-chat",
+  "account_id": "c6608053535c17727f4c0cc8ef6f9d30",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-09",
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://pgk-mdk.ru,https://www.pgk-mdk.ru,http://127.0.0.1:8780,http://localhost:8780,http://127.0.0.1:8776,http://localhost:8776"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "CHAT_ROOM", "class_name": "ChatRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChatRoom"] }]
+}
