@@ -143,3 +143,51 @@ test('Presence lease removes a vanished visitor even when the SSE proxy fails to
     assert.equal(room.clients.size, 0); assert.equal(room.timer, null);
   } finally { await first.reader.cancel(); await second.reader.cancel(); await Promise.all([first.pumping, second.pumping]); }
 });
+
+test('Replies are server-generated quotes; reactions toggle once per visitor and survive snapshots', async () => {
+ const {room}=await makeRoom(); const a=await post(room,'join',{name:'Анна'}),b=await post(room,'join',{name:'Борис'});
+ const first=await listen(room,a),second=await listen(room,b);
+ try{
+  assert.deepEqual(a.features,['replies','reactions','typing']);
+  const original=await post(room,'message',{text:'🟣'.repeat(180)},a);
+  assert.equal((await post(room,'message',{text:'ответ',replyTo:'missing'},b)).status,400);
+  const answer=await post(room,'message',{text:'ответ',replyTo:original.id,reply:{name:'Подмена',text:'подмена'}},b);
+  const delivered=await first.until(e=>e.event==='message'&&e.data.id===answer.id);
+  assert.equal(delivered.reply.name,'Анна');assert.equal([...delivered.reply.text].length,160);assert.equal(delivered.reply.id,original.id);
+  assert.equal((await post(room,'reaction',{id:answer.id,emoji:'💀'},a)).status,400);
+  assert.equal((await post(room,'reaction',{id:'missing',emoji:'👍'},a)).status,400);
+  assert.equal((await post(room,'reaction',{id:answer.id,emoji:'👍'},a)).status,200);
+  await second.until(e=>e.event==='reaction'&&e.data.reactions['👍']?.length===1);
+  await post(room,'reaction',{id:answer.id,emoji:'👍'},b);
+  await first.until(e=>e.event==='reaction'&&e.data.reactions['👍']?.length===2);
+  await post(room,'reaction',{id:answer.id,emoji:'👍'},a);
+  assert.deepEqual(room.messages.at(-1).reactions['👍'],[b.id]);
+  const reopened=await listen(room,a);const snapshot=await reopened.until(e=>e.event==='snapshot');
+  assert.deepEqual(snapshot.messages.at(-1).reactions['👍'],[b.id]);assert.equal(snapshot.messages.at(-1).reply.name,'Анна');
+  await reopened.reader.cancel();await reopened.pumping;
+  room.messages.shift();assert.equal(room.messages[0].reply.text,'🟣'.repeat(160));
+  assert.equal((await post(room,'reaction',{id:answer.id,emoji:'👍'},{token:'fake'})).status,401);
+  let throttled=false;for(let i=0;i<22;i++)if((await post(room,'reaction',{id:answer.id,emoji:'🔥'},a)).status===429)throttled=true;
+  assert.ok(throttled);
+  const due=room.resetAt+1;room.now=()=>due;await room.alarm();assert.equal(room.messages.length,0);
+ }finally{await first.reader.cancel();await second.reader.cancel();await Promise.all([first.pumping,second.pumping]);}
+});
+
+test('Typing is ephemeral, expires after six seconds, and stops on send or last stream departure',async()=>{
+ const {room}=await makeRoom();let clock=Date.now();room.now=()=>clock;
+ const a=await post(room,'join',{name:'Анна'}),b=await post(room,'join',{name:'Борис'});
+ const first=await listen(room,a),second=await listen(room,b);
+ try{
+  assert.equal((await post(room,'typing',{active:'yes'},a)).status,400);
+  await post(room,'typing',{active:true},a);
+  const event=await second.until(e=>e.event==='typing'&&e.data.users[0]?.id===a.id);assert.equal(event.users[0].until,clock+6000);
+  const otherTab=await listen(room,a);assert.equal((await otherTab.until(e=>e.event==='snapshot')).typing[0].name,'Анна');
+  await first.reader.cancel();await first.pumping;assert.equal(room.typing.size,1);
+  await post(room,'profile',{name:'Новое имя'},a);assert.equal(room.typingUsers()[0].name,'Новое имя');
+  clock+=6001;room.cleanup();assert.equal(room.typing.size,0);
+  await post(room,'typing',{active:true},a);await post(room,'message',{text:'готово'},a);assert.equal(room.typing.size,0);
+  await post(room,'typing',{active:true},a);await otherTab.reader.cancel();await otherTab.pumping;assert.equal(room.typing.size,0);
+  assert.equal((await post(room,'typing',{active:true},a)).status,401);
+  await post(room,'typing',{active:true},b);const due=room.resetAt+1;room.now=()=>due;await room.alarm();assert.equal(room.typing.size,0);
+ }finally{await first.reader.cancel();await second.reader.cancel();await Promise.all([first.pumping,second.pumping]);}
+});

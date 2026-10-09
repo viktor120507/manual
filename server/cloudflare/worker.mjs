@@ -1,6 +1,8 @@
 // One Durable Object coordinates the whole site. Message bodies never enter storage.
 const PERIOD = 2 * 60 * 60 * 1000;
 const MAX_MESSAGES = 200;
+const FEATURES = ['replies', 'reactions', 'typing'];
+const REACTIONS = ['👍', '❤️', '😂', '🔥'];
 const encoder = new TextEncoder();
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }
@@ -52,7 +54,7 @@ export default {
       ...headers, 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Max-Age': '600'
     }});
-    if (!/^\/api\/chat\/(health|join|events|message|profile|ping|leave)$/.test(url.pathname))
+    if (!/^\/api\/chat\/(health|join|events|message|profile|ping|leave|reaction|typing)$/.test(url.pathname))
       return wrap(json({ error: 'Запрос не найден.' }, 404));
     if (!origin && url.pathname !== '/api/chat/health')
       return wrap(json({ error: 'Откройте чат на сайте практикума.' }, 403));
@@ -74,6 +76,7 @@ export class ChatRoom {
     this.sessions = new Map();
     this.clients = new Set();
     this.limits = new Map();
+    this.typing = new Map();
     this.timer = null;
     this.presenceQueued = false;
     this.now = () => Date.now();
@@ -90,9 +93,17 @@ export class ChatRoom {
     return [...this.clients].filter(c => !seen.has(c.session.id) && seen.add(c.session.id))
       .map(c => ({ id: c.session.id, name: c.session.name }));
   }
+  typingUsers() {
+    return [...this.typing.values()].filter(entry => entry.until > this.now())
+      .map(entry => ({ id: entry.session.id, name: entry.session.name, until: entry.until }));
+  }
+  stopTyping(session) {
+    if (this.typing.delete(session.id)) this.broadcast('typing', { users: this.typingUsers() });
+  }
   drop(client) {
     if (!this.clients.delete(client)) return;
     client.session.lastSeen = this.now();
+    if (![...this.clients].some(c => c.session === client.session)) this.stopTyping(client.session);
     try { client.controller.close(); } catch {}
     if (!this.clients.size) { clearInterval(this.timer); this.timer = null; }
     if (!this.presenceQueued) {
@@ -111,6 +122,7 @@ export class ChatRoom {
   async resetIfDue() {
     if (this.now() < this.resetAt) return;
     this.messages = [];
+    this.typing.clear();
     this.resetAt = this.now() + PERIOD;
     this.broadcast('reset', { resetAt: this.resetAt });
     await this.ctx.storage.setAlarm(this.resetAt);
@@ -122,6 +134,9 @@ export class ChatRoom {
     // Browser acknowledgements keep presence bounded even if stream cancellation is lost.
     for (const client of this.clients) if (time - client.session.lastSeen > 90000) this.drop(client);
     for (const [key, bucket] of this.limits) if (time >= bucket.until) this.limits.delete(key);
+    let typingChanged = false;
+    for (const [id, entry] of this.typing) if (time >= entry.until) { this.typing.delete(id); typingChanged = true; }
+    if (typingChanged) this.broadcast('typing', { users: this.typingUsers() });
     const active = new Set([...this.clients].map(c => c.session.token));
     for (const [token, session] of this.sessions)
       if (!active.has(token) && time - session.lastSeen > 30 * 60000) this.sessions.delete(token);
@@ -140,7 +155,7 @@ export class ChatRoom {
     try {
       await this.resetIfDue(); this.cleanup();
       if (path.endsWith('/health') && request.method === 'GET')
-        return json({ ok: true, provider: 'cloudflare', online: this.online().length, resetAt: this.resetAt, maxMessages: MAX_MESSAGES });
+        return json({ ok: true, provider: 'cloudflare', online: this.online().length, resetAt: this.resetAt, maxMessages: MAX_MESSAGES, features: FEATURES });
       if (path.endsWith('/join') && request.method === 'POST') {
         if (this.limited(ip, 'join', 60, 60000)) throw fail('Слишком много подключений. Подождите немного.', 429);
         const data = await readBody(request); let session = this.sessions.get(data.token);
@@ -151,7 +166,7 @@ export class ChatRoom {
           this.sessions.set(session.token, session);
         }
         session.lastSeen = this.now();
-        return json({ token: session.token, id: session.id, name: session.name, resetAt: this.resetAt, maxMessages: MAX_MESSAGES, presenceLease: true });
+        return json({ token: session.token, id: session.id, name: session.name, resetAt: this.resetAt, maxMessages: MAX_MESSAGES, presenceLease: true, features: FEATURES });
       }
       const token = request.headers.get('Authorization')?.replace(/^Bearer /, '') || url.searchParams.get('token');
       const session = this.sessions.get(token);
@@ -163,7 +178,7 @@ export class ChatRoom {
         const body = new ReadableStream({
           start: controller => {
             client = { controller, session }; this.clients.add(client); session.lastSeen = this.now();
-            this.emit(client, 'snapshot', { messages: this.messages, users: this.online(), resetAt: this.resetAt, maxMessages: MAX_MESSAGES });
+            this.emit(client, 'snapshot', { messages: this.messages, users: this.online(), resetAt: this.resetAt, maxMessages: MAX_MESSAGES, features: FEATURES, typing: this.typingUsers() });
             this.broadcast('presence', { users: this.online() });
           },
           cancel: () => this.drop(client)
@@ -177,7 +192,7 @@ export class ChatRoom {
         }, 15000);
         return new Response(body, { headers: { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store' } });
       }
-      if (!['/api/chat/profile', '/api/chat/message', '/api/chat/ping', '/api/chat/leave'].includes(path) || request.method !== 'POST')
+      if (!['/api/chat/profile', '/api/chat/message', '/api/chat/ping', '/api/chat/leave', '/api/chat/reaction', '/api/chat/typing'].includes(path) || request.method !== 'POST')
         throw fail('Запрос не найден.', 404);
       if (![...this.clients].some(c => c.session === session)) throw fail('Дождитесь подключения к чату.', 401);
       if (this.limited(ip, 'request', 120, 10000)) throw fail('Слишком много запросов. Подождите немного.', 429);
@@ -188,15 +203,46 @@ export class ChatRoom {
       }
       session.lastSeen = this.now();
       if (path.endsWith('/ping')) return json({ ok: true });
+      if (path.endsWith('/typing')) {
+        if (typeof data.active !== 'boolean') throw fail('Некорректный статус набора.', 400);
+        if (!data.active) { this.stopTyping(session); return json({ ok: true }); }
+        if (this.limited(session.id, 'typing', 4, 10000)) throw fail('Подождите немного.', 429);
+        this.typing.set(session.id, { session, until: this.now() + 6000 });
+        this.broadcast('typing', { users: this.typingUsers() }); return json({ ok: true });
+      }
+      if (path.endsWith('/reaction')) {
+        if (!REACTIONS.includes(data.emoji)) throw fail('Неизвестная реакция.', 400);
+        const message = this.messages.find(m => m.id === data.id);
+        if (!message) throw fail('Сообщение уже удалено.', 400);
+        if (this.limited(session.id, 'reaction', 20, 10000)) throw fail('Не так быстро: подождите немного.', 429);
+        message.reactions ||= {};
+        const voters = message.reactions[data.emoji] ||= [];
+        const index = voters.indexOf(session.id);
+        if (index < 0 && voters.length >= 500) throw fail('Достигнут лимит реакций.', 429);
+        if (index < 0) voters.push(session.id); else voters.splice(index, 1);
+        if (!voters.length) delete message.reactions[data.emoji];
+        this.broadcast('reaction', { id: message.id, reactions: message.reactions });
+        return json({ ok: true });
+      }
       if (path.endsWith('/profile')) {
         const name = cleanName(data.name); if (!name) throw fail('Введите имя.', 400);
-        session.name = name; this.broadcast('presence', { users: this.online() }); return json({ name });
+        session.name = name; this.broadcast('presence', { users: this.online() });
+        if (this.typing.has(session.id)) this.broadcast('typing', { users: this.typingUsers() });
+        return json({ name });
       }
       const text = cleanText(data.text);
       if (!text || [...text].length > 800) throw fail('Сообщение должно содержать от 1 до 800 символов.', 400);
+      let reply;
+      if (data.replyTo != null) {
+        const original = this.messages.find(m => m.id === data.replyTo);
+        if (!original) throw fail('Сообщение для ответа уже удалено.', 400);
+        reply = { id: original.id, name: original.name, text: [...original.text].slice(0, 160).join(''), time: original.time };
+      }
       if (this.limited(session.id, 'sender', 8, 10000) || this.limited(ip, 'message', 60, 10000) || this.limited('all', 'global', 120, 60000))
         throw fail('Не так быстро: подождите несколько секунд.', 429);
       const message = { id: crypto.randomUUID(), senderId: session.id, name: session.name, text, time: this.now() };
+      if (reply) message.reply = reply;
+      this.stopTyping(session);
       this.messages.push(message);
       if (this.messages.length > MAX_MESSAGES) this.messages.splice(0, this.messages.length - MAX_MESSAGES);
       this.broadcast('message', message); return json({ id: message.id }, 201);
