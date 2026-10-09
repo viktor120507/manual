@@ -5,10 +5,12 @@
  const config=window.PGK_CHAT_CONFIG || {};
  const endpoint=script?.dataset.chatEndpoint || config.endpoint || (local?`http://${location.hostname}:${config.localPort || 8780}/api/chat`:'');
  const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8 8H5l-3 2v-10a9 9 0 0 1 18 0Z"/><path d="M7 10h8M7 14h5"/></svg>';
+ const settingsIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9.5 3-.6 2.4-2 .9-2.2-.7-2.5 4.3 1.7 1.7v2.3l-1.7 1.7 2.5 4.3 2.2-.7 2 .9.6 2.4h5l.6-2.4 2-.9 2.2.7 2.5-4.3-1.7-1.7v-2.3l1.7-1.7-2.5-4.3-2.2.7-2-.9L14.5 3Z"/><circle cx="12" cy="12.75" r="3"/></svg>';
  const root=document.createElement('div');root.className='community-chat';
- root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><button class="chat-launcher motion-surface" type="button" aria-expanded="false" aria-controls="community-chat-panel" aria-label="Открыть чат сайта">${icon}<span>Чат</span><span class="chat-unread" hidden>0</span><span class="chat-launcher-dot" aria-hidden="true"></span></button>
+ root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><div class="chat-notifications" role="log" aria-label="Новые сообщения чата" aria-live="polite" aria-relevant="additions" hidden></div><button class="chat-launcher motion-surface" type="button" aria-expanded="false" aria-controls="community-chat-panel" aria-label="Открыть чат сайта">${icon}<span>Чат</span><span class="chat-unread" hidden>0</span><span class="chat-launcher-dot" aria-hidden="true"></span></button>
  <section class="chat-panel" id="community-chat-panel" role="dialog" aria-labelledby="community-chat-title" hidden>
- <div class="chat-head"><div class="chat-heading-icon">${icon}</div><div><h2 id="community-chat-title">Чат практикума</h2><p class="chat-connection">Подключаемся…</p></div><button class="chat-sound tool-button" type="button" aria-label="Включить звук сообщений" aria-pressed="false" title="Звук выключен">♪</button><button class="chat-close tool-button motion-surface" type="button" aria-label="Закрыть чат"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+ <div class="chat-head"><div class="chat-heading-icon">${icon}</div><div><h2 id="community-chat-title">Чат практикума</h2><p class="chat-connection">Подключаемся…</p></div><button class="chat-settings-button tool-button" type="button" aria-label="Настройки чата" aria-expanded="false" aria-controls="chat-settings">${settingsIcon}</button><button class="chat-close tool-button motion-surface" type="button" aria-label="Закрыть чат"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+ <section class="chat-settings" id="chat-settings" aria-labelledby="chat-settings-title" hidden><h3 id="chat-settings-title">Настройки чата</h3><label class="chat-setting"><span><strong>Всплывающие сообщения</strong><small>Над кнопкой чата</small></span><input type="checkbox" role="switch" class="chat-popups-toggle" aria-label="Всплывающие сообщения" checked><span class="chat-switch" aria-hidden="true"></span></label><label class="chat-setting"><span><strong>Звук сообщений</strong><small>Тихий сигнал при новом сообщении</small></span><input type="checkbox" role="switch" class="chat-sound-toggle" aria-label="Звук сообщений" checked><span class="chat-switch" aria-hidden="true"></span></label></section>
  <div class="chat-info"><span class="chat-online-label"><span aria-hidden="true"></span><b class="chat-online-count">0 онлайн</b></span><span class="chat-expiry" title="История автоматически очищается каждые два часа">Очистка через 2:00:00</span></div>
  <div class="chat-people" aria-label="Кто сейчас онлайн"></div>
  <div class="chat-history" tabindex="0" aria-label="Сообщения чата"><div class="chat-empty"><span>${icon}</span><strong>Здесь можно обсудить задания</strong><p>Поздоровайся или задай вопрос.<br>Сообщения исчезнут при следующей очистке.</p></div><ol class="chat-messages" aria-label="История сообщений"></ol></div>
@@ -25,7 +27,7 @@
  const field=$('#chat-message'),nameField=$('#chat-nickname'),send=$('.chat-send'),error=$('.chat-error');
  let stream,session,connected=false,sending=false,savingName=false,unread=0,retryTimer,retryDelay=1500,resetAt=Date.now()+7200000,maxMessages=200,connecting=false,stopped=false,lastAck=0;
  const ids=new Set(),messages=new Map(),emojis=['👍','❤️','😂','🔥'];
- let replyTo=null,firstUnread=null,typingUsers=[],typingTimer,lastTyping=0,typingActive=false,sound=false,audioContext,lastSound=0;
+ let replyTo=null,firstUnread=null,typingUsers=[],typingTimer,lastTyping=0,typingActive=false,sound=true,popups=true,audioContext,lastSound=0;
  const supports=feature=>session?.features?.includes(feature);
  const picker=document.createElement('div');picker.className='chat-reaction-picker';picker.hidden=true;picker.setAttribute('role','toolbar');picker.setAttribute('aria-label','Выбрать реакцию');root.append(picker);
  let pickerMessage=null,pickerHideTimer,pickerCloseTimer;
@@ -48,8 +50,16 @@
  history.addEventListener('scroll',closePicker,{passive:true});addEventListener('resize',closePicker);
 
  const nearBottom=()=>history.scrollHeight-history.scrollTop-history.clientHeight<55;
- try{sound=localStorage.getItem('pgk-chat-sound')==='true';}catch{}
- function soundControl(){const button=$('.chat-sound');button.setAttribute('aria-pressed',String(sound));button.setAttribute('aria-label',sound?'Выключить звук сообщений':'Включить звук сообщений');button.title=sound?'Звук включён':'Звук выключен';button.classList.toggle('chat-sound-on',sound);}
+ try{sound=localStorage.getItem('pgk-chat-sound')!=='false';popups=localStorage.getItem('pgk-chat-popups')!=='false';}catch{}
+ const settings=$('.chat-settings'),settingsButton=$('.chat-settings-button'),notices=$('.chat-notifications'),toasts=[];
+ function setSettings(open,focus=false){settings.hidden=!open;settingsButton.setAttribute('aria-expanded',String(open));if(focus)(open?$('.chat-popups-toggle'):settingsButton).focus();}
+ function preferences(){ $('.chat-sound-toggle').checked=sound;$('.chat-popups-toggle').checked=popups; }
+ function enableAudio(){
+  if(!sound)return;
+  try{audioContext ||= new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});}catch{}
+ }
+ // Browsers unlock sound after a gesture; incoming messages never prompt for permissions.
+ document.addEventListener('pointerdown',enableAudio,{passive:true});document.addEventListener('keydown',enableAudio);
  function playSound(){
   if(!sound||!audioContext||audioContext.state!=='running'||Date.now()-lastSound<1000)return;
   lastSound=Date.now();const oscillator=audioContext.createOscillator(),gain=audioContext.createGain(),now=audioContext.currentTime;
@@ -57,7 +67,43 @@
   gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(.035,now+.015);gain.gain.exponentialRampToValueAtTime(.001,now+.18);
   oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start(now);oscillator.stop(now+.2);oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
  }
- $('.chat-sound').addEventListener('click',()=>{sound=!sound;try{localStorage.setItem('pgk-chat-sound',String(sound));}catch{}if(sound){try{audioContext ||= new (window.AudioContext||window.webkitAudioContext)();audioContext.resume().then(playSound).catch(()=>{});}catch{}}soundControl();});soundControl();
+ settingsButton.addEventListener('click',event=>setSettings(settings.hidden,event.detail===0));
+ $('.chat-sound-toggle').addEventListener('change',event=>{sound=event.target.checked;try{localStorage.setItem('pgk-chat-sound',String(sound));}catch{}if(sound)enableAudio();else audioContext?.suspend().catch(()=>{});});
+ $('.chat-popups-toggle').addEventListener('change',event=>{popups=event.target.checked;try{localStorage.setItem('pgk-chat-popups',String(popups));}catch{}if(!popups)clearToasts();});
+ document.addEventListener('pointerdown',event=>{if(!settings.hidden&&!settings.contains(event.target)&&!settingsButton.contains(event.target))setSettings(false);});
+ addEventListener('storage',event=>{if(event.key==='pgk-chat-sound'){sound=event.newValue!=='false';if(!sound)audioContext?.suspend().catch(()=>{});}else if(event.key==='pgk-chat-popups'){popups=event.newValue!=='false';if(!popups)clearToasts();}preferences();});preferences();
+
+ function removeToast(toast,animate=false){
+  if(!toasts.includes(toast))return;clearTimeout(toast.timer);clearTimeout(toast.exitTimer);
+  if(animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches){toast.element.classList.add('chat-toast-leaving');toast.exitTimer=setTimeout(()=>removeToast(toast),230);return;}
+  toasts.splice(toasts.indexOf(toast),1);if(toast.element.contains(document.activeElement))launcher.focus();toast.element.remove();notices.hidden=!toasts.length;
+ }
+ function clearToasts(){for(const toast of [...toasts])removeToast(toast);}
+ function armToast(toast){clearTimeout(toast.timer);toast.timer=setTimeout(()=>removeToast(toast,true),15000);}
+ function fitToasts(){
+  if(!toasts.length)return;
+  const header=document.querySelector('.topbar')?.getBoundingClientRect().bottom||0;
+  const viewport=window.visualViewport,top=Math.max(viewport?.offsetTop||0,header)+12;
+  const available=Math.max(0,notices.getBoundingClientRect().bottom-top);
+  while(toasts.length&&(toasts.length>6||notices.scrollHeight>available))removeToast(toasts.at(-1));
+ }
+ function showToast(item){
+  if(!popups||!panel.hidden)return;
+  const oldPositions=new Map(toasts.map(toast=>[toast,toast.element.getBoundingClientRect().top]));
+  const card=document.createElement('div');card.className='chat-toast';card.dataset.messageId=item.id;
+  const open=document.createElement('button');open.type='button';open.className='chat-toast-open';
+  const meta=document.createElement('span');meta.className='chat-toast-meta';const author=document.createElement('strong'),time=document.createElement('time');author.textContent=item.name;time.dateTime=new Date(item.time).toISOString();time.textContent=new Date(item.time).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});meta.append(author,time);
+  const text=document.createElement('span');text.className='chat-toast-text';text.textContent=[...item.text].slice(0,240).join('')+([...item.text].length>240?'…':'');open.append(meta,text);open.setAttribute('aria-label',`Открыть сообщение ${item.name}: ${text.textContent}`);
+  const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='chat-toast-dismiss';dismiss.textContent='×';dismiss.setAttribute('aria-label',`Скрыть уведомление от ${item.name}`);card.append(open,dismiss);
+  const toast={element:card,id:item.id};toasts.unshift(toast);notices.hidden=false;notices.prepend(card);
+  open.addEventListener('click',()=>{setOpen(true);const original=[...list.children].find(el=>el.dataset.messageId===item.id);if(original){original.scrollIntoView({block:'center'});original.classList.add('chat-quoted-target');setTimeout(()=>original.classList.remove('chat-quoted-target'),1300);}});
+  dismiss.addEventListener('click',()=>removeToast(toast,true));
+  const pause=()=>clearTimeout(toast.timer),resume=()=>{if(!card.matches(':hover')&&!card.contains(document.activeElement))armToast(toast);};
+  card.addEventListener('pointerenter',pause);card.addEventListener('pointerleave',resume);card.addEventListener('focusin',pause);card.addEventListener('focusout',resume);
+  fitToasts();if(!toasts.includes(toast))return;armToast(toast);
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)for(const [existing,oldTop] of oldPositions){if(!toasts.includes(existing))continue;const distance=oldTop-existing.element.getBoundingClientRect().top;if(distance)existing.element.animate([{transform:`translateY(${distance}px)`},{transform:'translateY(0)'}],{duration:320,easing:'cubic-bezier(.22,.8,.25,1)'});}
+ }
+ addEventListener('resize',fitToasts);window.visualViewport?.addEventListener('resize',fitToasts);
  function renderTyping(){
   const users=typingUsers.filter(user=>user.id!==session?.id&&user.until>Date.now());
   $('.chat-typing-label').textContent=users.length?users.length===1?`${users[0].name} печатает`:users.length===2?`${users[0].name} и ${users[1].name} печатают`:'Несколько человек печатают':'';
@@ -94,12 +140,12 @@
  function badge(){const chip=$('.chat-unread');chip.textContent=unread>99?'99+':String(unread);chip.hidden=!unread;launcher.setAttribute('aria-label',unread?`Открыть чат сайта, новых сообщений: ${unread}`:'Открыть чат сайта');}
  function jump(){firstUnread=null;history.scrollTop=history.scrollHeight;$('.chat-jump').hidden=true;unread=0;badge();}
  function setOpen(open){
-  if(!open)closePicker();panel.hidden=!open;root.classList.toggle('chat-open',open);launcher.setAttribute('aria-expanded',String(open));launcher.hidden=open;
+  setSettings(false);if(open)clearToasts();if(!open)closePicker();panel.hidden=!open;root.classList.toggle('chat-open',open);launcher.setAttribute('aria-expanded',String(open));launcher.hidden=open;
   if(open){clock();if(firstUnread){divider();root.querySelector('.chat-new-divider')?.scrollIntoView({block:'start'});$('.chat-jump').hidden=nearBottom();}else jump();(connected?(namePending()?nameField:field):$('.chat-close')).focus();}else{stopTyping();if(!unread){firstUnread=null;divider();}launcher.focus();}
  }
- launcher.addEventListener('click',()=>{if(sound){try{audioContext ||= new (window.AudioContext||window.webkitAudioContext)();audioContext.resume().catch(()=>{});}catch{}}setOpen(true);});$('.chat-close').addEventListener('click',()=>setOpen(false));$('.chat-backdrop').addEventListener('click',()=>setOpen(false));$('.chat-jump').addEventListener('click',jump);
+ launcher.addEventListener('click',()=>{enableAudio();setOpen(true);});$('.chat-close').addEventListener('click',()=>setOpen(false));$('.chat-backdrop').addEventListener('click',()=>setOpen(false));$('.chat-jump').addEventListener('click',jump);
  panel.addEventListener('keydown',event=>{
-  if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setOpen(false);}
+  if(event.key==='Escape'){event.preventDefault();event.stopPropagation();if(!settings.hidden)setSettings(false,true);else setOpen(false);}
   if(event.key==='Tab'){
    const controls=[...panel.querySelectorAll('button:not([disabled]):not([hidden]),input:not([disabled]),textarea:not([disabled]),[tabindex="0"]')].filter(el=>el.getClientRects().length);
    if(event.shiftKey&&document.activeElement===controls[0]){event.preventDefault();controls.at(-1)?.focus();}
@@ -125,14 +171,14 @@
   if(supports('reactions'))for(const emoji of emojis){const button=document.createElement('button');button.type='button';button.className='chat-reaction';button.dataset.emoji=emoji;const glyph=document.createElement('b'),count=document.createElement('span');glyph.textContent=emoji;button.append(glyph,count);button.addEventListener('click',async()=>{if(!connected)return;button.disabled=true;try{await request('/reaction',{id:item.id,emoji});}catch(e){showError(e.message);}finally{button.disabled=false;}});actions.append(button);}
   if(supports('replies')){const button=document.createElement('button');button.type='button';button.className='chat-reply-button';button.textContent='↩';button.setAttribute('aria-label',`Ответить на сообщение ${item.name}`);button.title='Ответить';button.addEventListener('click',()=>setReply(item));meta.append(button);}
   if(actions.children.length)bubble.append(actions);li.append(avatar,bubble);list.append(li);
-  while(messages.size>maxMessages){const oldest=messages.keys().next().value;messages.delete(oldest);ids.delete(oldest);[...list.children].find(el=>el.dataset.messageId===oldest)?.remove();if(replyTo===oldest)setReply(null);if(pickerMessage?.id===oldest)closePicker();if(firstUnread===oldest)firstUnread=[...messages.keys()].find(id=>id!==item.id)||item.id;}
+  while(messages.size>maxMessages){const oldest=messages.keys().next().value;messages.delete(oldest);ids.delete(oldest);[...list.children].find(el=>el.dataset.messageId===oldest)?.remove();const toast=toasts.find(entry=>entry.id===oldest);if(toast)removeToast(toast);if(replyTo===oldest)setReply(null);if(pickerMessage?.id===oldest)closePicker();if(firstUnread===oldest)firstUnread=[...messages.keys()].find(id=>id!==item.id)||item.id;}
   $('.chat-empty').hidden=true;updateReactions(item);
   if(!panel.hidden&&(stick||own))jump();
   else if(notify&&!own){unread++;firstUnread ||= item.id;divider();badge();if(!panel.hidden)$('.chat-jump').hidden=false;}
   if(!stick&&anchor?.isConnected)history.scrollTop+=anchor.getBoundingClientRect().top-anchorTop;
-  if(notify&&!own)playSound();
+  if(notify&&!own){showToast(item);playSound();}
  }
- function clearHistory(){closePicker();list.replaceChildren();ids.clear();messages.clear();setReply(null);firstUnread=null;typingUsers=[];renderTyping();$('.chat-empty').hidden=false;unread=0;badge();$('.chat-jump').hidden=true;}
+ function clearHistory(){closePicker();clearToasts();list.replaceChildren();ids.clear();messages.clear();setReply(null);firstUnread=null;typingUsers=[];renderTyping();$('.chat-empty').hidden=false;unread=0;badge();$('.chat-jump').hidden=true;}
  async function request(path,data){
   const res=await fetch(endpoint+path,{method:'POST',headers:{'Content-Type':'application/json',...(session?.token?{'Authorization':'Bearer '+session.token}:{})},body:JSON.stringify(data),signal:AbortSignal.timeout(10000)});
   const reply=await res.json();if(!res.ok)throw Object.assign(new Error(reply.error || 'Не удалось отправить запрос.'),{status:res.status});return reply;
@@ -184,7 +230,7 @@
  });
  let ticker=setInterval(()=>{if(!panel.hidden)clock();renderTyping();},1000);
  addEventListener('pagehide',()=>{
-  stopped=true;clearTimeout(typingTimer);clearTimeout(pickerHideTimer);clearTimeout(pickerCloseTimer);
+  stopped=true;clearToasts();setSettings(false);audioContext?.suspend().catch(()=>{});clearTimeout(typingTimer);clearTimeout(pickerHideTimer);clearTimeout(pickerCloseTimer);
   if(session?.presenceLease&&connected)fetch(endpoint+'/leave',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.token},body:'{}',keepalive:true}).catch(()=>{});
   stream?.close();clearTimeout(retryTimer);clearInterval(ticker);
  });
