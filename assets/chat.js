@@ -14,7 +14,8 @@
  <div class="chat-history" tabindex="0" aria-label="Сообщения чата"><div class="chat-empty"><span>${icon}</span><strong>Здесь можно обсудить задания</strong><p>Поздоровайся или задай вопрос.<br>Сообщения исчезнут при следующей очистке.</p></div><ol class="chat-messages" aria-label="История сообщений"></ol></div>
  <button class="chat-jump" type="button" hidden>Новые сообщения ↓</button>
  <div class="chat-error" role="status" hidden></div>
- <form class="chat-profile"><label for="chat-nickname">Твоё имя</label><input id="chat-nickname" type="text" maxlength="24" placeholder="Гость" autocomplete="nickname" aria-label="Имя в чате"><button class="chat-name-save" type="submit" disabled>Изменить</button></form>
+ <form class="chat-profile"><label for="chat-nickname">Твоё имя</label><input id="chat-nickname" type="text" maxlength="24" placeholder="Гость" autocomplete="nickname" aria-label="Имя в чате" aria-describedby="chat-name-hint"><button class="chat-name-save" type="submit" disabled>Сохранить имя</button></form>
+ <p class="chat-name-hint" id="chat-name-hint" role="status" hidden></p>
  <form class="chat-composer"><label class="chat-sr-only" for="chat-message">Сообщение</label><textarea id="chat-message" rows="2" maxlength="800" placeholder="Напиши сообщение…" aria-describedby="chat-composer-hint" disabled></textarea><button class="chat-send motion-surface" type="submit" aria-label="Отправить сообщение" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 3 18 9-18 9 4-9-4-9Z"/><path d="M7 12h14"/></svg></button></form>
  <div class="chat-foot"><span id="chat-composer-hint">Enter — отправить · Shift + Enter — новая строка</span><span class="chat-length">0 / 800</span></div><p class="chat-storage-note">Без регистрации · История только на 2 часа</p>
  </section>`;
@@ -22,18 +23,26 @@
  const $=selector=>root.querySelector(selector);
  const launcher=$('.chat-launcher'),panel=$('.chat-panel'),history=$('.chat-history'),list=$('.chat-messages');
  const field=$('#chat-message'),nameField=$('#chat-nickname'),send=$('.chat-send'),error=$('.chat-error');
- let stream,session,connected=false,sending=false,unread=0,retryTimer,retryDelay=1500,resetAt=Date.now()+7200000,maxMessages=200,connecting=false,stopped=false,lastAck=0;
+ let stream,session,connected=false,sending=false,savingName=false,unread=0,retryTimer,retryDelay=1500,resetAt=Date.now()+7200000,maxMessages=200,connecting=false,stopped=false,lastAck=0;
  const ids=new Set();
  try{session=JSON.parse(sessionStorage.getItem('pgk-chat-session') || 'null');nameField.value=session?.name || localStorage.getItem('pgk-chat-name') || '';}catch{}
  function saveSession(){try{sessionStorage.setItem('pgk-chat-session',JSON.stringify(session));}catch{}}
  function showError(message){error.textContent=message;error.hidden=!message;}
- function availability(value,message){connected=value;root.classList.toggle('chat-connected',value);field.disabled=!value;$('.chat-name-save').disabled=!value;send.disabled=!value||sending||!field.value.trim();$('.chat-connection').textContent=message;}
+ function namePending(){return Boolean(session?.name&&nameField.value!==session.name);}
+ function updateControls(){
+  const pending=namePending(),blocked=pending||savingName,hint=$('.chat-name-hint'),save=$('.chat-name-save');
+  root.classList.toggle('chat-name-pending',blocked);nameField.disabled=savingName;
+  field.disabled=!connected||blocked;send.disabled=!connected||blocked||sending||!field.value.trim();
+  save.disabled=!connected||savingName||!pending||!nameField.value.trim();save.textContent=savingName?'Сохраняем…':'Сохранить имя';
+  hint.hidden=!blocked;hint.textContent=savingName?'Сохраняем новое имя…':nameField.value.trim()?'Сохрани имя, чтобы продолжить писать.':'Введи имя и нажми «Сохранить имя».';
+ }
+ function availability(value,message){connected=value;root.classList.toggle('chat-connected',value);updateControls();$('.chat-connection').textContent=message;}
  function clock(){const seconds=Math.max(0,Math.ceil((resetAt-Date.now())/1000));$('.chat-expiry').textContent=`Очистка через ${Math.floor(seconds/3600)}:${String(Math.floor(seconds/60)%60).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
  function badge(){const chip=$('.chat-unread');chip.textContent=unread>99?'99+':String(unread);chip.hidden=!unread;launcher.setAttribute('aria-label',unread?`Открыть чат сайта, новых сообщений: ${unread}`:'Открыть чат сайта');}
  function jump(){history.scrollTop=history.scrollHeight;$('.chat-jump').hidden=true;unread=0;badge();}
  function setOpen(open){
   panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));launcher.hidden=open;
-  if(open){clock();jump();(connected?field:$('.chat-close')).focus();}else launcher.focus();
+  if(open){clock();jump();(connected?(namePending()?nameField:field):$('.chat-close')).focus();}else launcher.focus();
  }
  launcher.addEventListener('click',()=>setOpen(true));$('.chat-close').addEventListener('click',()=>setOpen(false));$('.chat-jump').addEventListener('click',jump);
  panel.addEventListener('keydown',event=>{
@@ -71,7 +80,10 @@
  async function connect(){
   if(connecting||stopped||!endpoint)return;connecting=true;stream?.close();availability(false,'Подключаемся…');
   try{
-   session=await request('/join',{token:session?.token,name:nameField.value});nameField.value=session.name;resetAt=session.resetAt;maxMessages=session.maxMessages;saveSession();
+   const draft=nameField.value,pending=namePending();
+   session=await request('/join',{token:session?.token,name:pending?session.name:draft});
+   if(!pending&&nameField.value===draft)nameField.value=session.name;
+   resetAt=session.resetAt;maxMessages=session.maxMessages;saveSession();updateControls();
    stream=new EventSource(endpoint+'/events?token='+encodeURIComponent(session.token));
    stream.addEventListener('snapshot',event=>{
     const data=JSON.parse(event.data);clearHistory();resetAt=data.resetAt;maxMessages=data.maxMessages;
@@ -87,18 +99,24 @@
    stream.onerror=()=>{stream?.close();connecting=false;availability(false,'Связь прервалась · переподключаемся');schedule();};
   }catch{connecting=false;availability(false,'Чат временно недоступен');showError('Соединение восстановится автоматически.');schedule();}
  }
- field.addEventListener('input',()=>{$('.chat-length').textContent=`${field.value.length} / 800`;send.disabled=!connected||sending||!field.value.trim();});
+ nameField.addEventListener('input',updateControls);
+ field.addEventListener('input',()=>{$('.chat-length').textContent=`${field.value.length} / 800`;updateControls();});
  field.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(!send.disabled)$('.chat-composer').requestSubmit();}});
  $('.chat-composer').addEventListener('submit',async event=>{
-  event.preventDefault();const text=field.value.trim();if(!text||!connected||sending)return;
-  sending=true;send.disabled=true;showError('');
+  event.preventDefault();if(namePending()||savingName){updateControls();if(!savingName)nameField.focus();return;}
+  const text=field.value.trim();if(!text||!connected||sending)return;
+  sending=true;updateControls();showError('');
   try{await request('/message',{text});field.value='';$('.chat-length').textContent='0 / 800';}
   catch(e){showError(e.message);if(e.status===401){availability(false,'Восстанавливаем подключение…');connect();}}
-  finally{sending=false;send.disabled=!connected||!field.value.trim();if(!panel.hidden)field.focus();}
+  finally{sending=false;updateControls();if(!panel.hidden)(namePending()?nameField:field).focus();}
  });
  $('.chat-profile').addEventListener('submit',async event=>{
-  event.preventDefault();if(!connected)return;
-  try{const data=await request('/profile',{name:nameField.value});session.name=data.name;nameField.value=data.name;saveSession();try{localStorage.setItem('pgk-chat-name',data.name);}catch{}showError('Имя сохранено.');}catch(e){showError(e.message);}
+  event.preventDefault();if(!connected||savingName||!namePending())return;
+  if(!nameField.value.trim()){updateControls();nameField.focus();return;}
+  savingName=true;updateControls();showError('');
+  try{const data=await request('/profile',{name:nameField.value});session.name=data.name;nameField.value=data.name;saveSession();try{localStorage.setItem('pgk-chat-name',data.name);}catch{}showError('Имя сохранено.');}
+  catch(e){showError(e.message);if(e.status===401){availability(false,'Восстанавливаем подключение…');connect();}}
+  finally{savingName=false;updateControls();if(!panel.hidden)(namePending()?nameField:field).focus();}
  });
  let ticker=setInterval(()=>{if(!panel.hidden)clock();},1000);
  addEventListener('pagehide',()=>{
