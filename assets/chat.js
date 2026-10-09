@@ -10,14 +10,14 @@
  <section class="chat-panel" id="community-chat-panel" role="dialog" aria-labelledby="community-chat-title" hidden>
  <div class="chat-head"><div class="chat-heading-icon">${icon}</div><div><h2 id="community-chat-title">Чат практикума</h2><p class="chat-connection">Подключаемся…</p></div><button class="chat-close tool-button motion-surface" type="button" aria-label="Закрыть чат"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
  <div class="chat-info"><span class="chat-online-label"><span aria-hidden="true"></span><b class="chat-online-count">0 онлайн</b></span><span class="chat-expiry" title="История автоматически очищается каждые два часа">Очистка через 2:00:00</span></div>
- <div class="chat-people" aria-label="Кто сейчас онлайн">Можно общаться без регистрации</div>
+ <div class="chat-people" aria-label="Кто сейчас онлайн"></div>
  <div class="chat-history" tabindex="0" aria-label="Сообщения чата"><div class="chat-empty"><span>${icon}</span><strong>Здесь можно обсудить задания</strong><p>Поздоровайся или задай вопрос.<br>Сообщения исчезнут при следующей очистке.</p></div><ol class="chat-messages" aria-label="История сообщений"></ol></div>
  <button class="chat-jump" type="button" hidden>Новые сообщения ↓</button>
  <div class="chat-error" role="status" hidden></div>
  <form class="chat-profile"><label for="chat-nickname">Твоё имя</label><input id="chat-nickname" type="text" maxlength="24" placeholder="Гость" autocomplete="nickname" aria-label="Имя в чате" aria-describedby="chat-name-hint"><button class="chat-name-save" type="submit" disabled>Сохранить имя</button></form>
  <p class="chat-name-hint" id="chat-name-hint" role="status" hidden></p>
- <form class="chat-composer"><label class="chat-sr-only" for="chat-message">Сообщение</label><textarea id="chat-message" rows="2" maxlength="800" placeholder="Напиши сообщение…" aria-describedby="chat-composer-hint" disabled></textarea><button class="chat-send motion-surface" type="submit" aria-label="Отправить сообщение" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 3 18 9-18 9 4-9-4-9Z"/><path d="M7 12h14"/></svg></button></form>
- <div class="chat-foot"><span id="chat-composer-hint">Enter — отправить · Shift + Enter — новая строка</span><span class="chat-length">0 / 800</span></div><p class="chat-storage-note">Без регистрации · История только на 2 часа</p>
+ <form class="chat-composer"><label class="chat-sr-only" for="chat-message">Сообщение</label><textarea id="chat-message" rows="2" maxlength="800" placeholder="Напиши сообщение…" disabled></textarea><button class="chat-send motion-surface" type="submit" aria-label="Отправить сообщение" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 3 18 9-18 9 4-9-4-9Z"/><path d="M7 12h14"/></svg></button></form>
+ <div class="chat-foot"><span class="chat-length">0 / 800</span></div>
  </section>`;
  document.body.append(root);
  const $=selector=>root.querySelector(selector);
@@ -56,7 +56,7 @@
  history.addEventListener('scroll',()=>{if(history.scrollHeight-history.scrollTop-history.clientHeight<45){$('.chat-jump').hidden=true;unread=0;badge();}},{passive:true});
  function people(users){
   $('.chat-online-count').textContent=`${users.length} онлайн`;
-  $('.chat-people').textContent=users.length?users.slice(0,5).map(u=>u.name+(u.id===session?.id?' (ты)':'')).join(' · ')+(users.length>5?` · ещё ${users.length-5}`:''):'Можно общаться без регистрации';
+  $('.chat-people').textContent=users.length?users.slice(0,5).map(u=>u.name+(u.id===session?.id?' (ты)':'')).join(' · ')+(users.length>5?` · ещё ${users.length-5}`:''):'';
  }
  function addMessage(item,notify=true){
   if(ids.has(item.id))return;ids.add(item.id);
