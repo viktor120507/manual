@@ -80,7 +80,7 @@
   toasts.splice(toasts.indexOf(toast),1);if(toast.element.contains(document.activeElement))launcher.focus();toast.element.remove();notices.hidden=!toasts.length;
  }
  function clearToasts(){for(const toast of [...toasts])removeToast(toast);}
- function armToast(toast){clearTimeout(toast.timer);toast.timer=setTimeout(()=>removeToast(toast,true),15000);}
+ function armToast(toast){clearTimeout(toast.timer);toast.timer=setTimeout(()=>removeToast(toast,true),3000);}
  function fitToasts(){
   if(!toasts.length)return;
   const header=document.querySelector('.topbar')?.getBoundingClientRect().bottom||0;
