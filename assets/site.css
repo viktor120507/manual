@@ -296,3 +296,10 @@ html[data-theme] :is(.contact-footer,.welcome-contacts) .social-link:focus-visib
   html[data-theme] body :is(.topbar,.sidebar,.welcome-dialog,.search-dialog,.focus-toolbar,.module-overview,.contact-footer){background:Canvas;-webkit-backdrop-filter:none;backdrop-filter:none}
  }
 }
+
+/* A quiet, keyboard-accessible easter egg in the existing footer. */
+.secret-break-link{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:28px;height:28px;margin-top:-5px;border:1px solid transparent;border-radius:7px;color:var(--muted);touch-action:manipulation;transition:opacity 160ms ease}
+.secret-break-link svg{width:16px;height:16px}
+@media(hover:hover) and (pointer:fine){.secret-break-link:hover{color:var(--accent);border-color:var(--line)}}
+@media(pointer:coarse){.secret-break-link{min-width:44px;min-height:44px;margin-top:-12px}}
+@media print{.secret-break-link{display:none!important}}
