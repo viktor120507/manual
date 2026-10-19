@@ -429,10 +429,10 @@ setupInteractionMotion();
 
 // A discreet entrance to the local, fictional college games room.
 {
- const footer=document.querySelector('.source-row');
- if(footer&&document.currentScript){
+ const author=document.querySelector('.sidebar-source');
+ if(author&&document.currentScript){
   const entrance=document.createElement('a');entrance.className='secret-break-link';entrance.href=new URL('../peremena/',document.currentScript.src).href;entrance.setAttribute('aria-label','Секретная перемена');entrance.title='Секретная перемена';
   entrance.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-10 12 12)"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor" stroke="none"/></svg>';
-  entrance.addEventListener('click',()=>{try{sessionStorage.setItem('pgk-casino-return',location.pathname+location.search+location.hash);}catch{}});footer.append(entrance);
+  entrance.addEventListener('click',()=>{try{sessionStorage.setItem('pgk-casino-return',location.pathname+location.search+location.hash);}catch{}});author.append(entrance);
  }
 }

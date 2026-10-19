@@ -297,9 +297,11 @@ html[data-theme] :is(.contact-footer,.welcome-contacts) .social-link:focus-visib
  }
 }
 
-/* A quiet, keyboard-accessible easter egg in the existing footer. */
-.secret-break-link{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:28px;height:28px;margin-top:-5px;border:1px solid transparent;border-radius:7px;color:var(--muted);touch-action:manipulation;transition:opacity 160ms ease}
-.secret-break-link svg{width:16px;height:16px}
+/* Keep the secret entrance beside the author in the navigation drawer. */
+.secret-break-link{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;height:32px;margin-left:auto;border:1px solid transparent;border-radius:8px;color:var(--muted);touch-action:manipulation;transition:opacity 160ms ease}
+.sidebar-source>div{flex:1;min-width:0}
+.secret-break-link svg{width:18px;height:18px}
 @media(hover:hover) and (pointer:fine){.secret-break-link:hover{color:var(--accent);border-color:var(--line)}}
-@media(pointer:coarse){.secret-break-link{min-width:44px;min-height:44px;margin-top:-12px}}
+@media(pointer:coarse){.secret-break-link{min-width:44px;min-height:44px}}
 @media print{.secret-break-link{display:none!important}}
+@media(max-width:1023px){body.menu-open .community-chat{z-index:23}}
