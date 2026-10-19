@@ -63,3 +63,7 @@
 @keyframes chat-toast-leave{from{opacity:1;transform:none}to{opacity:0;transform:translateX(8px)}}
 @media(prefers-reduced-motion:reduce){.chat-switch,.chat-switch::after{transition:none}}
 @media(forced-colors:active){.chat-toast,.chat-settings,.chat-switch{background:Canvas;color:CanvasText;border-color:CanvasText}.chat-setting input:checked+.chat-switch{background:Highlight;border-color:Highlight}.chat-switch::after{background:CanvasText}.chat-setting input:checked+.chat-switch::after{background:HighlightText}}
+
+/* Empty space beside the closed launcher must not intercept footer links. */
+.community-chat{pointer-events:none}
+.community-chat>.chat-launcher,.community-chat>.chat-panel{pointer-events:auto}
